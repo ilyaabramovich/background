@@ -38,6 +38,12 @@ p {
   gap: 1rem;
 }
 
+.color-debug {
+  font-family: monospace;
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+}
+
 .game-actions {
   display: flex;
   align-items: center;
@@ -45,13 +51,10 @@ p {
   min-height: 2rem;
 }
 
-/* Pushes Play again to the far right, away from Go back / Reset. */
 .game-actions__button--end {
   margin-left: auto;
 }
 
-/* Controls and the result share one cell, so the status renders in the tiles' place
-   without resizing the panel. */
 .game-board__stage {
   display: grid;
 }
@@ -62,7 +65,7 @@ p {
 
 .game-board__controls {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(var(--control-columns), 1fr);
   gap: 1rem;
 }
 
@@ -81,8 +84,8 @@ p {
 
 .game-board {
   display: grid;
-  grid-template-columns: repeat(var(--board-columns, 4), 1fr);
-  grid-template-rows: repeat(var(--board-rows, 4), 1fr);
+  grid-template-columns: repeat(var(--board-columns), 1fr);
+  grid-template-rows: repeat(var(--board-rows), 1fr);
 }
 
 .game-board__tile {
@@ -107,9 +110,13 @@ p {
   background: linear-gradient(to bottom, var(--tile-preview), var(--tile-current));
 }
 
+.game-board__tile--control-flipped {
+  background: linear-gradient(to top, var(--tile-preview), var(--tile-current));
+}
+
 .game-board__tile--target {
-  grid-row: var(--target-row, 4);
-  grid-column: var(--target-column, 4);
+  grid-row: var(--target-row);
+  grid-column: var(--target-column);
   z-index: 2;
 }
 

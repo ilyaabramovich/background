@@ -4,11 +4,10 @@ import TargetColorTile from "./TargetColorTile";
 
 export default function GameBoard({ style, colors, targetColor }) {
   return (
-    <div
-      className="game-board"
-      style={style}
-    >
-      {colors.map((color, idx) => color ? <ColorTile key={idx} color={color} /> : <EmptyTile key={idx} />)}
+    <div className="game-board" style={style}>
+      {colors.map((color, idx) =>
+        color ? <ColorTile key={idx} color={color} /> : <EmptyTile key={idx} />,
+      )}
       <TargetColorTile color={targetColor} />
     </div>
   );

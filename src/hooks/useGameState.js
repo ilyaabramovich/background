@@ -6,7 +6,7 @@ const DEFAULT_GAME_CONFIG = {
   offsetMultiplier: 5,
 };
 
-export function useGameState(config = DEFAULT_GAME_CONFIG) {
+export function useGameState(config) {
   const { tileCount, offsetMultiplier } = { ...DEFAULT_GAME_CONFIG, ...config };
   const [{ colorTiles, targetColor }, setGameState] = useState(() =>
     initializeGameState(tileCount, offsetMultiplier),
@@ -15,7 +15,6 @@ export function useGameState(config = DEFAULT_GAME_CONFIG) {
 
   const handleOffsetColor = useCallback(
     (channel, delta) => {
-      // The last tile is placed by branching from the one before it; nothing to do past that.
       if (tileIndex >= tileCount - 1) {
         return;
       }
@@ -38,8 +37,6 @@ export function useGameState(config = DEFAULT_GAME_CONFIG) {
   );
 
   const goBack = useCallback(() => {
-    // colorTiles[0..tileIndex] is the move history; step the cursor back and drop the
-    // tile we're leaving so the board (and derived status) reflect the earlier state.
     if (tileIndex === 0) {
       return;
     }
@@ -58,7 +55,6 @@ export function useGameState(config = DEFAULT_GAME_CONFIG) {
   }, [tileIndex]);
 
   const restartGame = useCallback(() => {
-    // Keep the initial tile and target (same puzzle), clear every placed tile after it.
     setGameState((gameState) => ({
       ...gameState,
       colorTiles: gameState.colorTiles.map((tile, index) => (index === 0 ? tile : null)),
@@ -71,7 +67,6 @@ export function useGameState(config = DEFAULT_GAME_CONFIG) {
     setTileIndex(0);
   }, [tileCount, offsetMultiplier]);
 
-  // Status is derived from the board, not stored — it can't desync from the tiles.
   const isComplete = colorTiles.every((tile) => tile != null);
   const status = !isComplete
     ? "playing"

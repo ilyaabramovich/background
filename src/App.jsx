@@ -10,7 +10,7 @@ const BOARD_LAYOUT = {
   targetPosition: {
     row: 3,
     column: 3,
-  }
+  },
 };
 
 const BOARD_STYLE = {
@@ -18,7 +18,7 @@ const BOARD_STYLE = {
   "--board-rows": BOARD_LAYOUT.rows,
   "--target-row": BOARD_LAYOUT.targetPosition.row,
   "--target-column": BOARD_LAYOUT.targetPosition.column,
-}
+};
 
 const GAME_CONFIG = {
   tileCount: BOARD_LAYOUT.columns * BOARD_LAYOUT.rows - 1,
@@ -81,7 +81,11 @@ function App() {
           )}
         </div>
         <div className="game-board__stage">
-          <div className="game-board__controls" inert={status !== "playing"}>
+          <div
+            className="game-board__controls"
+            style={{ "--control-columns": CHANNELS.length }}
+            inert={status !== "playing"}
+          >
             {CHANNELS.map((name, channel) => (
               <GradientColorTile
                 key={`more-${name}`}
@@ -97,8 +101,9 @@ function App() {
               <GradientColorTile
                 key={`less-${name}`}
                 label={`Less ${name}`}
-                preview={currentHex}
-                current={formatColor(
+                flipped
+                current={currentHex}
+                preview={formatColor(
                   offsetColor(currentColor, channelOffset(channel, -1), PREVIEW_OFFSET_MULTIPLIER),
                 )}
                 onClick={() => handleOffsetColor(channel, -1)}
@@ -106,9 +111,7 @@ function App() {
             ))}
           </div>
           {status !== "playing" && (
-            <p className="game-board__result">
-              {status === "won" ? "Win!" : "Not this time"}
-            </p>
+            <p className="game-board__result">{status === "won" ? "Win!" : "Not this time"}</p>
           )}
         </div>
       </div>
