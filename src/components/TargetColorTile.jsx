@@ -13,17 +13,8 @@ const TargetColorTile = ({ color }) => {
   }, [color]);
 
   return (
-    <div className="game-board__tile game-board__tile--target">
-      <canvas
-        ref={canvasRef}
-        width={1}
-        height={1}
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "block",
-        }}
-      />
+    <div className="aspect-square [grid-area:var(--target-row)/var(--target-column)]">
+      <canvas ref={canvasRef} width={1} height={1} className="block h-full w-full" />
     </div>
   );
 };

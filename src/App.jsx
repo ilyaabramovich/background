@@ -1,3 +1,4 @@
+import ActionButton from "./components/ActionButton";
 import GameBoard from "./components/GameBoard";
 import ColorDebug from "./components/ColorDebug";
 import GradientColorTile from "./components/GradientColorTile";
@@ -25,8 +26,6 @@ const GAME_CONFIG = {
   offsetMultiplier: 10,
 };
 
-const PREVIEW_OFFSET_MULTIPLIER = GAME_CONFIG.offsetMultiplier * 8;
-
 const CHANNELS = ["Red", "Green", "Blue"];
 
 function App() {
@@ -42,78 +41,58 @@ function App() {
     canGoBack,
   } = useGameState(GAME_CONFIG);
   const currentColor = colorTiles[tileIndex];
-  const currentHex = formatColor(currentColor);
 
   return (
-    <main>
+    <main className="mx-auto grid max-w-[30rem] gap-4 p-4">
       <GameBoard
         style={BOARD_STYLE}
         colors={colorTiles.map(formatColor)}
         targetColor={formatColor(targetColor)}
       />
-      <div className="app__panel">
-        {/* {currentColor && <ColorDebug color={currentColor} targetColor={targetColor} />} */}
-        <div className="game-actions">
-          <button
-            type="button"
-            className="game-actions__button"
-            onClick={goBack}
-            disabled={!canGoBack}
-          >
+      {import.meta.env.DEV && <ColorDebug color={currentColor} targetColor={targetColor} />}
+      <div className="flex justify-between">
+        <div className="flex gap-2">
+          <ActionButton onClick={goBack} disabled={!canGoBack}>
             Go back
-          </button>
-          <button
-            type="button"
-            className="game-actions__button"
-            onClick={restartGame}
-            disabled={!canGoBack}
-          >
+          </ActionButton>
+          <ActionButton onClick={restartGame} disabled={!canGoBack}>
             Reset
-          </button>
-          {status !== "playing" && (
-            <button
-              type="button"
-              className="game-actions__button game-actions__button--end"
-              onClick={resetGame}
-            >
-              Play again
-            </button>
-          )}
+          </ActionButton>
         </div>
-        <div className="game-board__stage">
-          <div
-            className="game-board__controls"
-            style={{ "--control-columns": CHANNELS.length }}
-            inert={status !== "playing"}
-          >
-            {CHANNELS.map((name, channel) => (
-              <GradientColorTile
-                key={`more-${name}`}
-                label={`More ${name}`}
-                current={currentHex}
-                preview={formatColor(
-                  offsetColor(currentColor, channelOffset(channel, 1), PREVIEW_OFFSET_MULTIPLIER),
-                )}
-                onClick={() => handleOffsetColor(channel, 1)}
-              />
-            ))}
-            {CHANNELS.map((name, channel) => (
-              <GradientColorTile
-                key={`less-${name}`}
-                label={`Less ${name}`}
-                flipped
-                current={currentHex}
-                preview={formatColor(
-                  offsetColor(currentColor, channelOffset(channel, -1), PREVIEW_OFFSET_MULTIPLIER),
-                )}
-                onClick={() => handleOffsetColor(channel, -1)}
-              />
-            ))}
-          </div>
-          {status !== "playing" && (
-            <p className="game-board__result">{status === "won" ? "Win!" : "Not this time"}</p>
-          )}
+        {status !== "playing" && <ActionButton onClick={resetGame}>Play again</ActionButton>}
+      </div>
+      <div className="grid">
+        <div
+          className="col-start-1 row-start-1 grid gap-4 grid-cols-[repeat(var(--control-columns),1fr)] [&[inert]]:invisible"
+          style={{ "--control-columns": CHANNELS.length }}
+          inert={status !== "playing"}
+        >
+          {CHANNELS.map((name, channel) => (
+            <GradientColorTile
+              key={`more-${name}`}
+              label={`More ${name}`}
+              color={formatColor(
+                offsetColor(currentColor, channelOffset(channel, 1), GAME_CONFIG.offsetMultiplier),
+              )}
+              onClick={() => handleOffsetColor(channel, 1)}
+            />
+          ))}
+          {CHANNELS.map((name, channel) => (
+            <GradientColorTile
+              key={`less-${name}`}
+              label={`Less ${name}`}
+              color={formatColor(
+                offsetColor(currentColor, channelOffset(channel, -1), GAME_CONFIG.offsetMultiplier),
+              )}
+              onClick={() => handleOffsetColor(channel, -1)}
+            />
+          ))}
         </div>
+        {status !== "playing" && (
+          <p className="col-start-1 row-start-1 self-center justify-self-center text-2xl font-bold">
+            {status === "won" ? "Win!" : "Not this time"}
+          </p>
+        )}
       </div>
     </main>
   );
