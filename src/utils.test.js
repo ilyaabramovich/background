@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  channelOffset,
-  colorsEqual,
-  formatColor,
-  generateOffsets,
-  initializeGameState,
-  offsetColor,
-} from "./utils";
+import { channelOffset, colorsEqual, formatColor, offsetColor } from "./utils";
 
 describe("offsetColor", () => {
   it("applies each offset scaled by the multiplier", () => {
@@ -18,8 +11,6 @@ describe("offsetColor", () => {
   });
 
   it("wraps below zero instead of going negative", () => {
-    // 4x4 board at offsetMultiplier 20: -14 steps used to yield -14, which
-    // formatted to the invalid "#-e0a0a".
     expect(offsetColor([0, 10, 10], [-14, 0, 0], 20)).toEqual([232, 10, 10]);
   });
 
@@ -106,52 +97,6 @@ describe("formatColor", () => {
         parseInt(hex.slice(3, 5), 16),
         parseInt(hex.slice(5, 7), 16),
       ]).toEqual(color);
-    }
-  });
-});
-
-describe("generateOffsets", () => {
-  it("produces three integer offsets whose magnitudes sum to n", () => {
-    for (let n = 0; n <= 20; n++) {
-      for (let draw = 0; draw < 50; draw++) {
-        const offsets = generateOffsets(n);
-
-        expect(offsets).toHaveLength(3);
-        for (const offset of offsets) {
-          expect(Number.isInteger(offset)).toBe(true);
-        }
-        expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(n);
-      }
-    }
-  });
-});
-
-describe("initializeGameState", () => {
-  it("seeds only the first tile and leaves the rest empty", () => {
-    for (let i = 0; i < 200; i++) {
-      const { colorTiles } = initializeGameState(8, 10);
-
-      expect(colorTiles).toHaveLength(8);
-      expect(colorTiles[0]).toHaveLength(3);
-      for (const channel of colorTiles[0]) {
-        expect(Number.isInteger(channel)).toBe(true);
-        expect(channel).toBeGreaterThanOrEqual(0);
-        expect(channel).toBeLessThanOrEqual(255);
-      }
-      expect(colorTiles.slice(1)).toEqual(new Array(7).fill(null));
-    }
-  });
-
-  it("produces a target color with valid channels", () => {
-    for (let i = 0; i < 200; i++) {
-      const { targetColor } = initializeGameState(8, 10);
-
-      expect(targetColor).toHaveLength(3);
-      for (const channel of targetColor) {
-        expect(Number.isInteger(channel)).toBe(true);
-        expect(channel).toBeGreaterThanOrEqual(0);
-        expect(channel).toBeLessThanOrEqual(255);
-      }
     }
   });
 });

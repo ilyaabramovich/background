@@ -1,9 +1,3 @@
-import { formatRgb } from "../utils";
-
-export default function ColorDebug({ color, targetColor }) {
-  return (
-    <p className="font-mono whitespace-pre tabular-nums text-[#444]">
-      {`${formatRgb(color)} ${formatRgb(targetColor)}`}
-    </p>
-  );
+export default function ColorDebug({ color }) {
+  return <span>{`(${color.map((channel) => String(channel).padStart(3, " ")).join(", ")})`}</span>;
 }

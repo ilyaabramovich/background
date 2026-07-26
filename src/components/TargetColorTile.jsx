@@ -1,9 +1,9 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const TargetColorTile = ({ color }) => {
   const canvasRef = useRef(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 

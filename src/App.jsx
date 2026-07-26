@@ -1,55 +1,38 @@
 import ActionButton from "./components/ActionButton";
 import GameBoard from "./components/GameBoard";
-import ColorDebug from "./components/ColorDebug";
+import AppDebug from "./components/AppDebug";
 import ControlTile from "./components/ControlTile";
+import { CHANNELS, GAME_CONFIG } from "./config";
 import { useGameState } from "./hooks/useGameState";
 import { channelOffset, formatColor, offsetColor } from "./utils";
-
-const BOARD_LAYOUT = {
-  columns: 3,
-  rows: 3,
-  targetPosition: {
-    row: 3,
-    column: 3,
-  },
-};
-
-const BOARD_STYLE = {
-  "--board-columns": BOARD_LAYOUT.columns,
-  "--board-rows": BOARD_LAYOUT.rows,
-  "--target-row": BOARD_LAYOUT.targetPosition.row,
-  "--target-column": BOARD_LAYOUT.targetPosition.column,
-};
-
-const GAME_CONFIG = {
-  tileCount: BOARD_LAYOUT.columns * BOARD_LAYOUT.rows - 1,
-  offsetMultiplier: 10,
-};
-
-const CHANNELS = ["Red", "Green", "Blue"];
+import ColorDebug from "./components/ColorDebug";
 
 function App() {
   const {
-    colorTiles,
+    colors,
     targetColor,
+    currentColor,
     handleOffsetColor,
-    tileIndex,
     status,
     resetGame,
     restartGame,
     goBack,
     canGoBack,
   } = useGameState(GAME_CONFIG);
-  const currentColor = colorTiles[tileIndex];
 
   return (
     <main className="mx-auto grid max-w-[30rem] gap-4 p-4">
       <GameBoard
-        style={BOARD_STYLE}
-        colors={colorTiles.map(formatColor)}
+        colors={colors.map(formatColor)}
         targetColor={formatColor(targetColor)}
+        layout={GAME_CONFIG.board}
       />
-      {import.meta.env.DEV && <ColorDebug color={currentColor} targetColor={targetColor} />}
+      {import.meta.env.DEV && (
+        <AppDebug>
+          <ColorDebug color={currentColor} />
+          <ColorDebug color={targetColor} />
+        </AppDebug>
+      )}
       <div className="flex justify-between">
         <div className="flex gap-2">
           <ActionButton onClick={goBack} disabled={!canGoBack}>
@@ -69,8 +52,8 @@ function App() {
         >
           {CHANNELS.map((name, channel) => (
             <ControlTile
-              key={`more-${name}`}
-              aria-label={`More ${name}`}
+              key={name}
+              aria-label={`Increment ${name}`}
               color={formatColor(
                 offsetColor(currentColor, channelOffset(channel, 1), GAME_CONFIG.offsetMultiplier),
               )}
@@ -79,8 +62,8 @@ function App() {
           ))}
           {CHANNELS.map((name, channel) => (
             <ControlTile
-              key={`less-${name}`}
-              aria-label={`Less ${name}`}
+              key={name}
+              aria-label={`Decrement ${name}`}
               color={formatColor(
                 offsetColor(currentColor, channelOffset(channel, -1), GAME_CONFIG.offsetMultiplier),
               )}

@@ -1,82 +1,58 @@
 import { useCallback, useState } from "react";
-import { initializeGameState, offsetColor, channelOffset, colorsEqual } from "../utils";
+import { maxMoves as moveLimit } from "../config";
+import { initializeGameState } from "../game";
+import { offsetColor, channelOffset, colorsEqual } from "../utils";
 
-export function useGameState({ tileCount, offsetMultiplier }) {
-  const [{ colorTiles, targetColor }, setGameState] = useState(() =>
-    initializeGameState(tileCount, offsetMultiplier),
+export function useGameState({ board, offsetMultiplier }) {
+  const maxMoves = moveLimit(board);
+
+  const [{ initialColor, moves, targetColor }, setGameState] = useState(() =>
+    initializeGameState(maxMoves, offsetMultiplier),
   );
-  const [tileIndex, setTileIndex] = useState(0);
 
   const handleOffsetColor = useCallback(
     (channel, delta) => {
-      if (tileIndex >= tileCount - 1) {
-        return;
-      }
-
       setGameState((gameState) => {
+        if (gameState.moves.length >= maxMoves) {
+          return gameState;
+        }
+
+        const previousColor = gameState.moves.at(-1) ?? gameState.initialColor;
         const offsets = channelOffset(channel, delta);
-        const nextTile = offsetColor(gameState.colorTiles[tileIndex], offsets, offsetMultiplier);
-        const nextTiles = gameState.colorTiles.slice();
-        nextTiles[tileIndex + 1] = nextTile;
+        const nextColor = offsetColor(previousColor, offsets, offsetMultiplier);
 
-        return {
-          ...gameState,
-          colorTiles: nextTiles,
-        };
+        return { ...gameState, moves: [...gameState.moves, nextColor] };
       });
-
-      setTileIndex((index) => index + 1);
     },
-    [tileIndex, offsetMultiplier, tileCount],
+    [offsetMultiplier, maxMoves],
   );
 
   const goBack = useCallback(() => {
-    if (tileIndex === 0) {
-      return;
-    }
-
-    setGameState((gameState) => {
-      const nextTiles = gameState.colorTiles.slice();
-      nextTiles[tileIndex] = null;
-
-      return {
-        ...gameState,
-        colorTiles: nextTiles,
-      };
-    });
-
-    setTileIndex((index) => index - 1);
-  }, [tileIndex]);
+    setGameState((gameState) => ({ ...gameState, moves: gameState.moves.slice(0, -1) }));
+  }, []);
 
   const restartGame = useCallback(() => {
-    setGameState((gameState) => ({
-      ...gameState,
-      colorTiles: gameState.colorTiles.map((tile, index) => (index === 0 ? tile : null)),
-    }));
-    setTileIndex(0);
+    setGameState((gameState) => ({ ...gameState, moves: [] }));
   }, []);
 
   const resetGame = useCallback(() => {
-    setGameState(initializeGameState(tileCount, offsetMultiplier));
-    setTileIndex(0);
-  }, [tileCount, offsetMultiplier]);
+    setGameState(initializeGameState(maxMoves, offsetMultiplier));
+  }, [maxMoves, offsetMultiplier]);
 
-  const isComplete = colorTiles.every((tile) => tile != null);
-  const status = !isComplete
-    ? "playing"
-    : colorsEqual(colorTiles.at(-1), targetColor)
-      ? "won"
-      : "lost";
+  const currentColor = moves.at(-1) ?? initialColor;
+
+  const isComplete = moves.length === maxMoves;
+  const status = !isComplete ? "playing" : colorsEqual(currentColor, targetColor) ? "won" : "lost";
 
   return {
-    colorTiles,
+    colors: [initialColor, ...moves],
     targetColor,
+    currentColor,
     handleOffsetColor,
-    tileIndex,
     status,
     resetGame,
     restartGame,
     goBack,
-    canGoBack: tileIndex > 0,
+    canGoBack: moves.length > 0,
   };
 }
