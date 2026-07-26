@@ -1,7 +1,9 @@
-const COLOR_COMPONENT_REGEXP = /\w\w/g;
-
 export function offsetColor(color, offsets, offsetMultiplier) {
-  return color.map((channel, idx) => (channel + offsets[idx] * offsetMultiplier + 256) % 256);
+  return color.map((channel, idx) => wrapChannel(channel + offsets[idx] * offsetMultiplier));
+}
+
+function wrapChannel(value) {
+  return ((value % 256) + 256) % 256;
 }
 
 export function channelOffset(channel, delta) {
@@ -14,11 +16,7 @@ export function colorsEqual(a, b) {
   return a != null && b != null && a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 }
 
-function fromHex(hexColor) {
-  return hexColor.match(COLOR_COMPONENT_REGEXP).map((hex) => parseInt(hex, 16));
-}
-
-export function formatRgb([r, g, b]) {
+function formatRgb([r, g, b]) {
   return `(${String(r).padStart(3, " ")}, ${String(g).padStart(3, " ")}, ${String(b).padStart(3, " ")})`;
 }
 
@@ -34,22 +32,18 @@ function formatColorComponent(component) {
   return component.toString(16).padStart(2, "0");
 }
 
-export function randomHexColor() {
-  const n = Math.floor(Math.random() * 0xffffff);
-  return `#${n.toString(16).padStart(6, "0")}`;
+function randomColor() {
+  return [0, 0, 0].map(() => Math.floor(Math.random() * 256));
 }
 
-export function initializeColors(size) {
+function initializeColors(size) {
   const colors = new Array(size).fill(null);
-  const initialColor = fromHex(randomHexColor());
-  colors[0] = initialColor;
+  colors[0] = randomColor();
   return colors;
 }
 
 export function initializeGameState(tileCount, offsetMultiplier) {
   const colorTiles = initializeColors(tileCount);
-  // The player places tileCount - 1 tiles after the initial one, so the target must be
-  // reachable in exactly that many unit steps.
   const targetColor = offsetColor(colorTiles[0], generateOffsets(tileCount - 1), offsetMultiplier);
 
   return {
@@ -58,7 +52,7 @@ export function initializeGameState(tileCount, offsetMultiplier) {
   };
 }
 
-export function generateOffsets(n) {
+function generateOffsets(n) {
   const p1 = Math.floor(Math.random() * (n + 1));
   const p2 = Math.floor(Math.random() * (n + 1));
 

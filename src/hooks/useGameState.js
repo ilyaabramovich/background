@@ -1,13 +1,7 @@
 import { useCallback, useState } from "react";
 import { initializeGameState, offsetColor, channelOffset, colorsEqual } from "../utils";
 
-const DEFAULT_GAME_CONFIG = {
-  tileCount: 3,
-  offsetMultiplier: 5,
-};
-
-export function useGameState(config) {
-  const { tileCount, offsetMultiplier } = { ...DEFAULT_GAME_CONFIG, ...config };
+export function useGameState({ tileCount, offsetMultiplier }) {
   const [{ colorTiles, targetColor }, setGameState] = useState(() =>
     initializeGameState(tileCount, offsetMultiplier),
   );

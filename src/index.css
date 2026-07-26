@@ -23,11 +23,6 @@ main {
   margin: 0 auto;
 }
 
-h1 {
-  font-size: 1.75rem;
-  margin: 0 0 0.5rem;
-}
-
 p {
   margin: 0;
   color: #444;
@@ -48,7 +43,6 @@ p {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  min-height: 2rem;
 }
 
 .game-actions__button--end {
@@ -89,7 +83,6 @@ p {
 }
 
 .game-board__tile {
-  display: flex;
   min-width: 30px;
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -115,6 +108,7 @@ p {
 }
 
 .game-board__tile--target {
+  display: flex;
   grid-row: var(--target-row);
   grid-column: var(--target-column);
   z-index: 2;
