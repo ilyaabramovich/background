@@ -1,7 +1,7 @@
 import ActionButton from "./components/ActionButton";
 import GameBoard from "./components/GameBoard";
 import ColorDebug from "./components/ColorDebug";
-import GradientColorTile from "./components/GradientColorTile";
+import ControlTile from "./components/ControlTile";
 import { useGameState } from "./hooks/useGameState";
 import { channelOffset, formatColor, offsetColor } from "./utils";
 
@@ -68,9 +68,9 @@ function App() {
           inert={status !== "playing"}
         >
           {CHANNELS.map((name, channel) => (
-            <GradientColorTile
+            <ControlTile
               key={`more-${name}`}
-              label={`More ${name}`}
+              aria-label={`More ${name}`}
               color={formatColor(
                 offsetColor(currentColor, channelOffset(channel, 1), GAME_CONFIG.offsetMultiplier),
               )}
@@ -78,9 +78,9 @@ function App() {
             />
           ))}
           {CHANNELS.map((name, channel) => (
-            <GradientColorTile
+            <ControlTile
               key={`less-${name}`}
-              label={`Less ${name}`}
+              aria-label={`Less ${name}`}
               color={formatColor(
                 offsetColor(currentColor, channelOffset(channel, -1), GAME_CONFIG.offsetMultiplier),
               )}

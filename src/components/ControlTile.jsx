@@ -1,11 +1,10 @@
-export default function GradientColorTile({ color, onClick, label }) {
+export default function ControlTile({ color, ...props }) {
   return (
     <button
       type="button"
-      aria-label={label}
+      {...props}
       className="aspect-square cursor-pointer"
       style={{ backgroundColor: color }}
-      onClick={onClick}
     />
   );
 }
