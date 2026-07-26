@@ -16,7 +16,7 @@ export function colorsEqual(a, b) {
   return a != null && b != null && a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 }
 
-function formatRgb([r, g, b]) {
+export function formatRgb([r, g, b]) {
   return `(${String(r).padStart(3, " ")}, ${String(g).padStart(3, " ")}, ${String(b).padStart(3, " ")})`;
 }
 
@@ -52,7 +52,7 @@ export function initializeGameState(tileCount, offsetMultiplier) {
   };
 }
 
-function generateOffsets(n) {
+export function generateOffsets(n) {
   const p1 = Math.floor(Math.random() * (n + 1));
   const p2 = Math.floor(Math.random() * (n + 1));
 
