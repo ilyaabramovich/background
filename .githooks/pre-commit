@@ -1,2 +1,13 @@
 #!/bin/sh
+set -e
+
+echo "🔍 Running formatter..."
+npm run fmt:check
+
+echo "🔍 Running linter..."
+npm run lint
+
+echo "🧪 Running tests..."
 npm test
+
+echo "✅ All checks passed!"
