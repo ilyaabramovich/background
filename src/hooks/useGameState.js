@@ -1,42 +1,52 @@
 import { useCallback, useState } from "react";
 import { maxMoves as moveLimit } from "../config";
-import { initializeGameState } from "../game";
-import { offsetColor, channelOffset, colorsEqual } from "../utils";
+import { generateOffsets, offsetColor, channelOffset, colorsEqual, randomColor } from "../utils";
+
+function initializeColors(maxMoves, offsetMultiplier) {
+  const initialColor = randomColor();
+
+  return {
+    initialColor,
+    targetColor: offsetColor(initialColor, generateOffsets(maxMoves), offsetMultiplier),
+  };
+}
 
 export function useGameState({ board, offsetMultiplier }) {
   const maxMoves = moveLimit(board);
 
-  const [{ initialColor, moves, targetColor }, setGameState] = useState(() =>
-    initializeGameState(maxMoves, offsetMultiplier),
+  const [{ initialColor, targetColor }, setPuzzle] = useState(() =>
+    initializeColors(maxMoves, offsetMultiplier),
   );
+  const [moves, setMoves] = useState([]);
 
   const handleOffsetColor = useCallback(
     (channel, delta) => {
-      setGameState((gameState) => {
-        if (gameState.moves.length >= maxMoves) {
-          return gameState;
+      setMoves((moves) => {
+        if (moves.length >= maxMoves) {
+          return moves;
         }
 
-        const previousColor = gameState.moves.at(-1) ?? gameState.initialColor;
+        const previousColor = moves.at(-1) ?? initialColor;
         const offsets = channelOffset(channel, delta);
         const nextColor = offsetColor(previousColor, offsets, offsetMultiplier);
 
-        return { ...gameState, moves: [...gameState.moves, nextColor] };
+        return [...moves, nextColor];
       });
     },
-    [offsetMultiplier, maxMoves],
+    [initialColor, offsetMultiplier, maxMoves],
   );
 
   const goBack = useCallback(() => {
-    setGameState((gameState) => ({ ...gameState, moves: gameState.moves.slice(0, -1) }));
+    setMoves((moves) => moves.slice(0, -1));
   }, []);
 
   const restartGame = useCallback(() => {
-    setGameState((gameState) => ({ ...gameState, moves: [] }));
+    setMoves([]);
   }, []);
 
   const resetGame = useCallback(() => {
-    setGameState(initializeGameState(maxMoves, offsetMultiplier));
+    setPuzzle(initializeColors(maxMoves, offsetMultiplier));
+    setMoves([]);
   }, [maxMoves, offsetMultiplier]);
 
   const currentColor = moves.at(-1) ?? initialColor;

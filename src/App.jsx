@@ -42,7 +42,7 @@ function App() {
             Reset
           </ActionButton>
         </div>
-        {status !== "playing" && <ActionButton onClick={resetGame}>Play again</ActionButton>}
+        <ActionButton onClick={resetGame}>New game</ActionButton>
       </div>
       <div className="grid">
         <div

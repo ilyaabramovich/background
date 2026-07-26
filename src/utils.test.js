@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { channelOffset, colorsEqual, formatColor, offsetColor } from "./utils";
+import { channelOffset, colorsEqual, formatColor, generateOffsets, offsetColor } from "./utils";
 
 describe("offsetColor", () => {
   it("applies each offset scaled by the multiplier", () => {
@@ -97,6 +97,22 @@ describe("formatColor", () => {
         parseInt(hex.slice(3, 5), 16),
         parseInt(hex.slice(5, 7), 16),
       ]).toEqual(color);
+    }
+  });
+});
+
+describe("generateOffsets", () => {
+  it("produces three integer offsets whose magnitudes sum to n", () => {
+    for (let n = 0; n <= 20; n++) {
+      for (let draw = 0; draw < 50; draw++) {
+        const offsets = generateOffsets(n);
+
+        expect(offsets).toHaveLength(3);
+        for (const offset of offsets) {
+          expect(Number.isInteger(offset)).toBe(true);
+        }
+        expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(n);
+      }
     }
   });
 });
