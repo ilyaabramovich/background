@@ -1,3 +1,20 @@
+export function getGameStatus(moves, maxMoves, currentColor, targetColor) {
+  if (moves.length < maxMoves) {
+    return "playing";
+  }
+
+  return colorsEqual(currentColor, targetColor) ? "won" : "lost";
+}
+
+export function initializeColors(maxMoves, offsetMultiplier) {
+  const initialColor = randomColor();
+
+  return {
+    initialColor,
+    targetColor: offsetColor(initialColor, generateOffsets(maxMoves), offsetMultiplier),
+  };
+}
+
 export function offsetColor(color, offsets, offsetMultiplier) {
   return color.map((channel, idx) => wrapChannel(channel + offsets[idx] * offsetMultiplier));
 }
@@ -28,7 +45,7 @@ function formatColorComponent(component) {
   return component.toString(16).padStart(2, "0");
 }
 
-export function randomColor() {
+function randomColor() {
   return Array.from({ length: 3 }, () => Math.floor(Math.random() * 256));
 }
 

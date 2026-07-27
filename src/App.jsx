@@ -12,12 +12,13 @@ function App() {
     colors,
     targetColor,
     currentColor,
-    handleOffsetColor,
+    handleMove,
     status,
     resetGame,
     restartGame,
     goBack,
     canGoBack,
+    canRestart,
   } = useGameState(GAME_CONFIG);
 
   return (
@@ -38,7 +39,7 @@ function App() {
           <ActionButton onClick={goBack} disabled={!canGoBack}>
             Go back
           </ActionButton>
-          <ActionButton onClick={restartGame} disabled={!canGoBack}>
+          <ActionButton onClick={restartGame} disabled={!canRestart}>
             Reset
           </ActionButton>
         </div>
@@ -50,26 +51,38 @@ function App() {
           style={{ "--control-columns": CHANNELS.length }}
           inert={status !== "playing"}
         >
-          {CHANNELS.map((name, channel) => (
-            <ControlTile
-              key={name}
-              aria-label={`Increment ${name}`}
-              color={formatColor(
-                offsetColor(currentColor, channelOffset(channel, 1), GAME_CONFIG.offsetMultiplier),
-              )}
-              onClick={() => handleOffsetColor(channel, 1)}
-            />
-          ))}
-          {CHANNELS.map((name, channel) => (
-            <ControlTile
-              key={name}
-              aria-label={`Decrement ${name}`}
-              color={formatColor(
-                offsetColor(currentColor, channelOffset(channel, -1), GAME_CONFIG.offsetMultiplier),
-              )}
-              onClick={() => handleOffsetColor(channel, -1)}
-            />
-          ))}
+          {CHANNELS.map((name, channel) => {
+            const nextColor = offsetColor(
+              currentColor,
+              channelOffset(channel, 1),
+              GAME_CONFIG.offsetMultiplier,
+            );
+
+            return (
+              <ControlTile
+                key={name}
+                aria-label={`Increment ${name}`}
+                color={formatColor(nextColor)}
+                onClick={() => handleMove(nextColor)}
+              />
+            );
+          })}
+          {CHANNELS.map((name, channel) => {
+            const nextColor = offsetColor(
+              currentColor,
+              channelOffset(channel, -1),
+              GAME_CONFIG.offsetMultiplier,
+            );
+
+            return (
+              <ControlTile
+                key={name}
+                aria-label={`Decrement ${name}`}
+                color={formatColor(nextColor)}
+                onClick={() => handleMove(nextColor)}
+              />
+            );
+          })}
         </div>
         {status !== "playing" && (
           <p className="col-start-1 row-start-1 self-center justify-self-center text-2xl font-bold">
