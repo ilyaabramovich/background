@@ -14,7 +14,7 @@ function initializeColors(maxMoves, offsetMultiplier) {
 export function useGameState({ board, offsetMultiplier }) {
   const maxMoves = moveLimit(board);
 
-  const [{ initialColor, targetColor }, setPuzzle] = useState(() =>
+  const [{ initialColor, targetColor }, setColors] = useState(() =>
     initializeColors(maxMoves, offsetMultiplier),
   );
   const [moves, setMoves] = useState([]);
@@ -45,7 +45,7 @@ export function useGameState({ board, offsetMultiplier }) {
   }, []);
 
   const resetGame = useCallback(() => {
-    setPuzzle(initializeColors(maxMoves, offsetMultiplier));
+    setColors(initializeColors(maxMoves, offsetMultiplier));
     setMoves([]);
   }, [maxMoves, offsetMultiplier]);
 
