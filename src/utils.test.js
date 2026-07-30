@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   colorToIntArray,
+  contrastingColor,
   formatColor,
   generateOffsets,
   offsetChannel,
@@ -75,6 +76,61 @@ describe("offsetChannel", () => {
         expect(offsetChannel(color, channel, amount)).toBe(offsetColor(color, offsets));
       }
     }
+  });
+});
+
+describe("contrastingColor", () => {
+  it("returns white on dark colors and black on light ones", () => {
+    expect(contrastingColor(0x000000)).toBe(0xffffff);
+    expect(contrastingColor(0xffffff)).toBe(0x000000);
+    expect(contrastingColor(0x0000ff)).toBe(0xffffff); // blue reads dark
+    expect(contrastingColor(0x00ff00)).toBe(0x000000); // green reads light
+  });
+
+  it("always picks whichever of black or white contrasts more", () => {
+    // WCAG contrast ratio, recomputed here rather than reusing the implementation.
+    const luminance = (colorInt) =>
+      colorToIntArray(colorInt)
+        .map((value) => {
+          const c = value / 255;
+
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        })
+        .reduce((sum, c, i) => sum + [0.2126, 0.7152, 0.0722][i] * c, 0);
+
+    const ratio = (a, b) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+
+      return (hi + 0.05) / (lo + 0.05);
+    };
+
+    for (let i = 0; i < 500; i++) {
+      const color = randomColor();
+      const chosen = contrastingColor(color);
+      const rejected = chosen === 0xffffff ? 0x000000 : 0xffffff;
+
+      expect(ratio(color, chosen)).toBeGreaterThanOrEqual(ratio(color, rejected));
+    }
+  });
+
+  it("clears the 4.5:1 threshold on the colors the game can generate", () => {
+    let worst = Infinity;
+
+    for (let i = 0; i < 500; i++) {
+      const color = randomColor();
+      const l = colorToIntArray(color)
+        .map((value) => {
+          const c = value / 255;
+
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        })
+        .reduce((sum, c, i) => sum + [0.2126, 0.7152, 0.0722][i] * c, 0);
+      const contrast = contrastingColor(color) === 0xffffff ? 1.05 / (l + 0.05) : (l + 0.05) / 0.05;
+
+      worst = Math.min(worst, contrast);
+    }
+
+    expect(worst).toBeGreaterThanOrEqual(4.5);
   });
 });
 

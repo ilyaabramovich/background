@@ -20,6 +20,27 @@ export function offsetChannel(colorInt, channelIndex, amount) {
   return packColor(channels);
 }
 
+// WCAG relative luminance: channels are linearized out of sRGB before being weighted,
+// because the eye is far more sensitive to green than to blue.
+function relativeLuminance(colorInt) {
+  const [r, g, b] = colorToIntArray(colorInt).map((value) => {
+    const channel = value / MAX_CHANNEL;
+
+    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Black and white text land on equal contrast ratios where 1.05/(L+0.05) meets
+// (L+0.05)/0.05, so that luminance (~0.1791) is where the better choice flips. Rounding
+// this constant misfiles the colors sitting in the thin band around it.
+const CONTRAST_PIVOT = Math.sqrt(1.05 * 0.05) - 0.05;
+
+export function contrastingColor(colorInt) {
+  return relativeLuminance(colorInt) > CONTRAST_PIVOT ? 0x000000 : 0xffffff;
+}
+
 export function formatColor(colorInt) {
   return `#${colorInt.toString(16).padStart(6, "0")}`;
 }

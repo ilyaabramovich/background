@@ -65,19 +65,16 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
               const nextColor = offsetChannel(currentColor, channel, amount);
 
               return (
-                <ControlTile
-                  key={`${name}${delta}`}
-                  aria-label={`${delta > 0 ? "Increment" : "Decrement"} ${name}`}
-                  color={nextColor}
-                  onClick={handleMove}
-                />
+                <ControlTile key={`${name}${delta}`} color={nextColor} onClick={handleMove}>
+                  {name} {delta > 0 ? "+" : "-"}
+                </ControlTile>
               );
             }),
           )}
         </div>
         {isOver && (
           <p className="col-start-1 row-start-1 self-center justify-self-center text-2xl font-bold">
-            {hasWon ? "Win!" : "Not this time"}
+            {hasWon ? "You won yay!" : "Not this time"}
           </p>
         )}
       </div>
