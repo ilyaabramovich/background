@@ -1,5 +1,5 @@
 export const GAME_CONFIG = {
-  offsetMultiplier: 10,
+  offsetMultiplier: 20,
   board: {
     columns: 3,
     rows: 3,

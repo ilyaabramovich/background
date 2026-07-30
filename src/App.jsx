@@ -7,7 +7,7 @@ let nextGameId = 0;
 
 function createGame() {
   const initialColor = randomColor();
-  const offsets = generateOffsets(MAX_MOVES).map((offset) => offset * GAME_CONFIG.offsetMultiplier);
+  const offsets = generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier);
 
   return {
     id: nextGameId++,

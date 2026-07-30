@@ -1,29 +1,23 @@
 const MAX_RGB_COLORS = 16777216;
+const MAX_CHANNEL = 0xff;
 
-export function offsetColor(colorInt, [rOffset, gOffset, bOffset]) {
-  const r = (colorInt >> 16) & 0xff;
-  const g = (colorInt >> 8) & 0xff;
-  const b = colorInt & 0xff;
+function clampChannel(value) {
+  return Math.min(Math.max(value, 0), MAX_CHANNEL);
+}
 
-  const newR = (r + rOffset) & 0xff;
-  const newG = (g + gOffset) & 0xff;
-  const newB = (b + bOffset) & 0xff;
+function packColor([r, g, b]) {
+  return (r << 16) | (g << 8) | b;
+}
 
-  return (newR << 16) | (newG << 8) | newB;
+export function offsetColor(colorInt, offsets) {
+  return packColor(colorToIntArray(colorInt).map((value, i) => clampChannel(value + offsets[i])));
 }
 
 export function offsetChannel(colorInt, channelIndex, amount) {
-  const r = (colorInt >> 16) & 0xff;
-  const g = (colorInt >> 8) & 0xff;
-  const b = colorInt & 0xff;
+  const channels = colorToIntArray(colorInt);
+  channels[channelIndex] = clampChannel(channels[channelIndex] + amount);
 
-  if (channelIndex === 0) {
-    return (((r + amount) & 0xff) << 16) | (g << 8) | b;
-  } else if (channelIndex === 1) {
-    return (r << 16) | (((g + amount) & 0xff) << 8) | b;
-  } else {
-    return (r << 16) | (g << 8) | ((b + amount) & 0xff);
-  }
+  return packColor(channels);
 }
 
 export function formatColor(colorInt) {
@@ -42,23 +36,36 @@ export function colorToIntArray(colorInt) {
   ];
 }
 
-export function generateOffsets(n) {
-  const p1 = Math.floor(Math.random() * (n + 1));
-  const p2 = Math.floor(Math.random() * (n + 1));
+// Now that channels clamp instead of wrapping, an offset that runs past 0 or 255 would
+// produce a target no sequence of steps can reach. So the direction is chosen from the
+// headroom the channel actually has rather than by coin flip.
+function pickDirection(value, distance) {
+  const canIncrease = value + distance <= MAX_CHANNEL;
+  const canDecrease = value - distance >= 0;
+
+  if (canIncrease && canDecrease) {
+    return Math.random() < 0.5 ? 1 : -1;
+  }
+  if (canIncrease || canDecrease) {
+    return canIncrease ? 1 : -1;
+  }
+
+  // Only when distance exceeds half the channel range, i.e. the board asks for more moves
+  // than a channel can absorb. The target is unreachable either way; take the roomier side.
+  return value < MAX_CHANNEL - value ? 1 : -1;
+}
+
+export function generateOffsets(moveCount, initialColor, step = 1) {
+  const p1 = Math.floor(Math.random() * (moveCount + 1));
+  const p2 = Math.floor(Math.random() * (moveCount + 1));
 
   const [min, max] = [p1, p2].sort((a, b) => a - b);
+  const magnitudes = [min, max - min, moveCount - max];
+  const channels = colorToIntArray(initialColor);
 
-  const absX = min;
-  const absY = max - min;
-  const absZ = n - max;
+  return magnitudes.map((magnitude, index) => {
+    const distance = magnitude * step;
 
-  const signX = Math.random() < 0.5 ? 1 : -1;
-  const signY = Math.random() < 0.5 ? 1 : -1;
-  const signZ = Math.random() < 0.5 ? 1 : -1;
-
-  const x = absX * signX;
-  const y = absY * signY;
-  const z = absZ * signZ;
-
-  return [x, y, z];
+    return distance * pickDirection(channels[index], distance);
+  });
 }

@@ -17,17 +17,17 @@ describe("offsetColor", () => {
     expect(offsetColor(0x0c2238, [0, 0, 0])).toBe(0x0c2238);
   });
 
-  it("wraps below zero instead of going negative", () => {
-    expect(offsetColor(0x000a0a, [-24, 0, 0])).toBe(0xe80a0a);
+  it("clamps at zero instead of going negative", () => {
+    expect(offsetColor(0x000a0a, [-24, 0, 0])).toBe(0x000a0a);
   });
 
-  it("wraps above 255", () => {
-    expect(offsetColor(0xfa0000, [10, 0, 0])).toBe(0x040000);
+  it("clamps at 255", () => {
+    expect(offsetColor(0xfa0000, [10, 0, 0])).toBe(0xff0000);
   });
 
-  it("does not bleed a wrapped channel into its neighbours", () => {
-    expect(offsetColor(0x00ff00, [0, 1, 0])).toBe(0x000000);
-    expect(offsetColor(0x00ff00, [0, -256, 0])).toBe(0x00ff00);
+  it("does not bleed a clamped channel into its neighbours", () => {
+    expect(offsetColor(0x00ff00, [0, 1, 0])).toBe(0x00ff00);
+    expect(offsetColor(0x00ff00, [0, -256, 0])).toBe(0x000000);
   });
 
   it("stays in 0-255 across the whole config space", () => {
@@ -59,9 +59,9 @@ describe("offsetChannel", () => {
     expect(offsetChannel(0x646464, 2, 10)).toBe(0x64646e);
   });
 
-  it("wraps within the channel without bleeding into its neighbours", () => {
-    expect(offsetChannel(0x00ff00, 1, 1)).toBe(0x000000);
-    expect(offsetChannel(0xff00ff, 1, -1)).toBe(0xffffff);
+  it("clamps within the channel without bleeding into its neighbours", () => {
+    expect(offsetChannel(0x00ff00, 1, 1)).toBe(0x00ff00);
+    expect(offsetChannel(0xff00ff, 1, -1)).toBe(0xff00ff);
   });
 
   it("agrees with offsetColor for every channel", () => {
@@ -124,17 +124,63 @@ describe("randomColor", () => {
 });
 
 describe("generateOffsets", () => {
-  it("produces three integer offsets whose magnitudes sum to n", () => {
-    for (let n = 0; n <= 20; n++) {
-      for (let draw = 0; draw < 50; draw++) {
-        const offsets = generateOffsets(n);
+  it("produces three integer offsets whose magnitudes sum to every move", () => {
+    for (let moveCount = 0; moveCount <= 12; moveCount++) {
+      for (const step of [1, 10]) {
+        for (let draw = 0; draw < 50; draw++) {
+          const offsets = generateOffsets(moveCount, randomColor(), step);
 
-        expect(offsets).toHaveLength(3);
-        for (const offset of offsets) {
-          expect(Number.isInteger(offset)).toBe(true);
+          expect(offsets).toHaveLength(3);
+          for (const offset of offsets) {
+            expect(Number.isInteger(offset)).toBe(true);
+          }
+          expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(moveCount * step);
         }
-        expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(n);
       }
+    }
+  });
+
+  // A channel with 128 of headroom can always absorb the offset in one direction or the
+  // other, so every board up to that size must land its target strictly inside 0-255.
+  it("never places the target past a channel edge", () => {
+    const step = 10;
+
+    for (let moveCount = 0; moveCount * step <= 128; moveCount++) {
+      for (let draw = 0; draw < 100; draw++) {
+        const initialColor = randomColor();
+        const channels = colorToIntArray(initialColor);
+
+        generateOffsets(moveCount, initialColor, step).forEach((offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          expect(exact).toBeGreaterThanOrEqual(0);
+          expect(exact).toBeLessThanOrEqual(255);
+        });
+      }
+    }
+  });
+
+  it("leaves the target reachable in exactly moveCount steps", () => {
+    const step = 10;
+    const moveCount = 7;
+
+    for (let draw = 0; draw < 200; draw++) {
+      const initialColor = randomColor();
+      const offsets = generateOffsets(moveCount, initialColor, step);
+      const target = offsetColor(initialColor, offsets);
+
+      let color = initialColor;
+      let played = 0;
+
+      offsets.forEach((offset, channel) => {
+        for (let i = 0; i < Math.abs(offset) / step; i++) {
+          color = offsetChannel(color, channel, Math.sign(offset) * step);
+          played++;
+        }
+      });
+
+      expect(color).toBe(target);
+      expect(played).toBe(moveCount);
     }
   });
 });

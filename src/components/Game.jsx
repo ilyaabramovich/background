@@ -16,6 +16,7 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
 
   const currentColor = moves.at(-1) ?? initialColor;
   const isOver = moves.length >= MAX_MOVES;
+  const hasWon = isOver && currentColor === targetColor;
 
   function handleMove(nextColor) {
     setMoves((moves) => (isOver ? moves : [...moves, nextColor]));
@@ -32,7 +33,7 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
   return (
     <>
       <div className="min-h-0 @container-size">
-        <GameBoard layout={board}>
+        <GameBoard layout={board} gradient={[initialColor, targetColor]} revealed={hasWon}>
           <Tile color={initialColor} />
           {Array.from({ length: MAX_MOVES }, (_, idx) => (
             <Tile key={idx} color={moves[idx] ?? null} />
@@ -76,7 +77,7 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
         </div>
         {isOver && (
           <p className="col-start-1 row-start-1 self-center justify-self-center text-2xl font-bold">
-            {currentColor === targetColor ? "Win!" : "Not this time"}
+            {hasWon ? "Win!" : "Not this time"}
           </p>
         )}
       </div>
