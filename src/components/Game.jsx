@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import AppDebug from "./AppDebug";
 import ControlTile from "./ControlTile";
 import { offsetChannel } from "../utils";
@@ -6,55 +6,38 @@ import ColorDebug from "./ColorDebug";
 import Tile from "./Tile";
 import GameBoard from "./GameBoard";
 import GameActions from "./GameActions";
+import { MAX_MOVES } from "../config";
 
 const CHANNELS = ["red", "green", "blue"];
 
 export default function Game({ initialColor, targetColor, onReset, config }) {
   const { board, offsetMultiplier } = config;
-  const maxMoves = board.columns * board.rows - 2;
-  const [{ moves, step }, setProgress] = useState(() => ({
-    moves: Array(maxMoves).fill(null),
-    step: 0,
-  }));
+  const [moves, setMoves] = useState([]);
 
-  const handleMove = useCallback((nextColor) => {
-    setProgress((progress) => {
-      const { moves, step } = progress;
-      if (step >= moves.length) {
-        return progress;
-      }
+  const currentColor = moves.at(-1) ?? initialColor;
+  const isOver = moves.length >= MAX_MOVES;
 
-      const next = moves.slice();
-      next[step] = nextColor;
-      return { moves: next, step: step + 1 };
-    });
-  }, []);
+  function handleMove(nextColor) {
+    setMoves((moves) => (isOver ? moves : [...moves, nextColor]));
+  }
 
-  // Rewinding only moves the cursor; slots past it are stale but never rendered,
-  // and the untouched array keeps every remaining tile memo-equal.
-  const goBack = useCallback(() => {
-    setProgress(({ moves, step }) => ({ moves, step: Math.max(step - 1, 0) }));
-  }, []);
+  function goBack() {
+    setMoves((moves) => moves.slice(0, -1));
+  }
 
-  const restartGame = useCallback(() => {
-    setProgress(({ moves }) => ({ moves, step: 0 }));
-  }, []);
-
-  const currentColor = step > 0 ? moves[step - 1] : initialColor;
-  const isOver = step >= maxMoves;
+  function restartGame() {
+    setMoves([]);
+  }
 
   return (
     <>
-      <div className="min-h-0 [container-type:size]">
-        <GameBoard layout={board} className="mx-auto aspect-square w-[min(100%,100cqh)]">
+      <div className="min-h-0 @container-size">
+        <GameBoard layout={board}>
           <Tile color={initialColor} />
-          {moves.map((color, idx) => (
-            <Tile key={idx} color={idx < step ? color : null} />
+          {Array.from({ length: MAX_MOVES }, (_, idx) => (
+            <Tile key={idx} color={moves[idx] ?? null} />
           ))}
-          <Tile
-            color={targetColor}
-            className="[grid-area:var(--target-row)/var(--target-column)]"
-          />
+          <Tile color={targetColor} />
         </GameBoard>
       </div>
       {import.meta.env.DEV && (
@@ -63,10 +46,15 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
           <ColorDebug color={targetColor} />
         </AppDebug>
       )}
-      <GameActions moveCount={step} onGoBack={goBack} onRestart={restartGame} onNewGame={onReset} />
+      <GameActions
+        moveCount={moves.length}
+        onGoBack={goBack}
+        onRestart={restartGame}
+        onNewGame={onReset}
+      />
       <div className="grid">
         <div
-          className="col-start-1 row-start-1 grid gap-[var(--gap)] grid-cols-[repeat(var(--control-columns),1fr)] [&[inert]]:invisible"
+          className="col-start-1 row-start-1 grid gap-(--gap) grid-cols-[repeat(var(--control-columns),1fr)] [[inert]]:invisible"
           style={{ "--control-columns": CHANNELS.length }}
           inert={isOver}
         >

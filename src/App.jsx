@@ -1,28 +1,32 @@
-import { useState, useCallback } from "react";
-import { GAME_CONFIG } from "./config";
+import { useState } from "react";
+import { GAME_CONFIG, MAX_MOVES } from "./config";
 import { randomColor, offsetColor, generateOffsets } from "./utils";
 import Game from "./components/Game";
 
+let nextGameId = 0;
+
+function createGame() {
+  const initialColor = randomColor();
+  const offsets = generateOffsets(MAX_MOVES).map((offset) => offset * GAME_CONFIG.offsetMultiplier);
+
+  return {
+    id: nextGameId++,
+    initialColor,
+    targetColor: offsetColor(initialColor, offsets),
+  };
+}
+
 function App() {
-  const { board, offsetMultiplier } = GAME_CONFIG;
-  const offsetsCount = board.columns * board.rows - 2;
-
-  const [initialColor, setInitialColor] = useState(randomColor);
-  const offsets = generateOffsets(offsetsCount).map((offset) => offset * offsetMultiplier);
-  const targetColor = offsetColor(initialColor, offsets);
-
-  const handleReset = useCallback(() => {
-    setInitialColor(randomColor);
-  }, []);
+  const [game, setGame] = useState(createGame);
 
   return (
-    <main className="grid h-dvh justify-center p-[var(--pad)]">
-      <div className="grid w-[var(--side)] grid-rows-[minmax(0,1fr)_auto_auto] gap-[var(--gap)]">
+    <main className="grid h-dvh justify-center p-(--pad)">
+      <div className="grid w-(--side) grid-rows-[minmax(0,1fr)_auto_auto] gap-(--gap)">
         <Game
-          key={initialColor}
-          initialColor={initialColor}
-          targetColor={targetColor}
-          onReset={handleReset}
+          key={game.id}
+          initialColor={game.initialColor}
+          targetColor={game.targetColor}
+          onReset={() => setGame(createGame())}
           config={GAME_CONFIG}
         />
       </div>
