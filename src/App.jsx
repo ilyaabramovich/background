@@ -16,14 +16,16 @@ function App() {
   }, []);
 
   return (
-    <main className="mx-auto grid max-w-[30rem] gap-4 p-4">
-      <Game
-        key={initialColor}
-        initialColor={initialColor}
-        targetColor={targetColor}
-        onReset={handleReset}
-        config={GAME_CONFIG}
-      />
+    <main className="grid h-dvh justify-center p-[var(--pad)]">
+      <div className="grid w-[var(--side)] grid-rows-[minmax(0,1fr)_auto_auto] gap-[var(--gap)]">
+        <Game
+          key={initialColor}
+          initialColor={initialColor}
+          targetColor={targetColor}
+          onReset={handleReset}
+          config={GAME_CONFIG}
+        />
+      </div>
     </main>
   );
 }

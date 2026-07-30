@@ -1,7 +1,7 @@
-export default function GameBoard({ layout, children }) {
+export default function GameBoard({ layout, className, children }) {
   return (
     <div
-      className="grid grid-cols-[repeat(var(--board-columns),1fr)] grid-rows-[repeat(var(--board-rows),1fr)]"
+      className={`grid grid-cols-[repeat(var(--board-columns),1fr)] grid-rows-[repeat(var(--board-rows),1fr)] ${className ?? ""}`}
       style={{
         "--board-columns": layout.columns,
         "--board-rows": layout.rows,
