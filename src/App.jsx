@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { GAME_CONFIG } from "./config";
 import { randomColor, offsetColor, generateOffsets } from "./utils";
 import Game from "./components/Game";
@@ -11,9 +11,9 @@ function App() {
   const offsets = generateOffsets(offsetsCount).map((offset) => offset * offsetMultiplier);
   const targetColor = offsetColor(initialColor, offsets);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setInitialColor(randomColor);
-  };
+  }, []);
 
   return (
     <main className="mx-auto grid max-w-[30rem] gap-4 p-4">

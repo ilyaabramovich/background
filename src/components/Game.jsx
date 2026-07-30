@@ -1,49 +1,58 @@
 import { useState, useCallback } from "react";
-import ActionButton from "./ActionButton";
 import AppDebug from "./AppDebug";
 import ControlTile from "./ControlTile";
 import { offsetChannel } from "../utils";
 import ColorDebug from "./ColorDebug";
-import ColorTile from "./ColorTile";
-import EmptyTile from "./EmptyTile";
-import TargetColorTile from "./TargetColorTile";
+import Tile from "./Tile";
 import GameBoard from "./GameBoard";
+import GameActions from "./GameActions";
 
 const CHANNELS = ["red", "green", "blue"];
 
 export default function Game({ initialColor, targetColor, onReset, config }) {
-  const [moves, setMoves] = useState([]);
-
   const { board, offsetMultiplier } = config;
   const maxMoves = board.columns * board.rows - 2;
 
+  // Fixed-length board slots plus a cursor, so every tile keeps a stable key for
+  // its whole life and a move swaps exactly one of them.
+  const [{ moves, step }, setProgress] = useState(() => ({
+    moves: Array(maxMoves).fill(null),
+    step: 0,
+  }));
+
   const handleMove = useCallback((nextColor) => {
-    setMoves((moves) => [...moves, nextColor]);
+    setProgress((progress) => {
+      const { moves, step } = progress;
+      if (step >= moves.length) {
+        return progress;
+      }
+
+      const next = moves.slice();
+      next[step] = nextColor;
+      return { moves: next, step: step + 1 };
+    });
   }, []);
 
+  // Rewinding only moves the cursor; slots past it are stale but never rendered,
+  // and the untouched array keeps every remaining tile memo-equal.
   const goBack = useCallback(() => {
-    setMoves((moves) => moves.slice(0, -1));
+    setProgress(({ moves, step }) => ({ moves, step: Math.max(step - 1, 0) }));
   }, []);
 
-  const restartGame = () => {
-    setMoves([]);
-  };
+  const restartGame = useCallback(() => {
+    setProgress(({ moves }) => ({ moves, step: 0 }));
+  }, []);
 
-  const currentColor = moves.at(-1) ?? initialColor;
-
-  const emptyTiles = Array.from({ length: maxMoves - moves.length }, (_, idx) => (
-    <EmptyTile key={idx} />
-  ));
+  const currentColor = step > 0 ? moves[step - 1] : initialColor;
 
   return (
     <>
       <GameBoard layout={board}>
-        <ColorTile color={initialColor} />
+        <Tile color={initialColor} />
         {moves.map((color, idx) => (
-          <ColorTile key={idx} color={color} />
+          <Tile key={idx} color={idx < step ? color : null} />
         ))}
-        {emptyTiles}
-        <TargetColorTile color={targetColor} />
+        <Tile color={targetColor} className="[grid-area:var(--target-row)/var(--target-column)]" />
       </GameBoard>
       {import.meta.env.DEV && (
         <AppDebug>
@@ -51,19 +60,9 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
           <ColorDebug color={targetColor} />
         </AppDebug>
       )}
-      <div className="flex justify-between">
-        <div className="flex gap-2">
-          <ActionButton onClick={goBack} disabled={moves.length === 0}>
-            Go back
-          </ActionButton>
-          <ActionButton onClick={restartGame} disabled={moves.length === 0}>
-            Reset
-          </ActionButton>
-        </div>
-        <ActionButton onClick={onReset}>New game</ActionButton>
-      </div>
+      <GameActions moveCount={step} onGoBack={goBack} onRestart={restartGame} onNewGame={onReset} />
       <div className="grid">
-        {moves.length < maxMoves ? (
+        {step < maxMoves ? (
           <div
             className="col-start-1 row-start-1 grid gap-4 grid-cols-[repeat(var(--control-columns),1fr)]"
             style={{ "--control-columns": CHANNELS.length }}

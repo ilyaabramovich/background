@@ -1,4 +1,6 @@
-export default function ActionButton(props) {
+import { memo } from "react";
+
+export default memo(function ActionButton(props) {
   return (
     <button
       type="button"
@@ -6,4 +8,4 @@ export default function ActionButton(props) {
       {...props}
     />
   );
-}
+});
