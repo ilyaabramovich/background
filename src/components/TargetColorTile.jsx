@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { formatColor } from "../utils";
 
 const TargetColorTile = ({ color }) => {
   const canvasRef = useRef(null);
@@ -8,7 +9,7 @@ const TargetColorTile = ({ color }) => {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = color;
+    ctx.fillStyle = formatColor(color);
     ctx.fillRect(0, 0, 1, 1);
   }, [color]);
 

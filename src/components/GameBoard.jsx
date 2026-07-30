@@ -1,13 +1,4 @@
-import { tileCount } from "../config";
-import ColorTile from "./ColorTile";
-import EmptyTile from "./EmptyTile";
-import TargetColorTile from "./TargetColorTile";
-
-export default function GameBoard({ colors, targetColor, layout }) {
-  const emptyTiles = Array.from({ length: tileCount(layout) - colors.length }, (_, idx) => (
-    <EmptyTile key={idx} />
-  ));
-
+export default function GameBoard({ layout, children }) {
   return (
     <div
       className="grid grid-cols-[repeat(var(--board-columns),1fr)] grid-rows-[repeat(var(--board-rows),1fr)]"
@@ -18,11 +9,7 @@ export default function GameBoard({ colors, targetColor, layout }) {
         "--target-column": layout.targetPosition.column,
       }}
     >
-      {colors.map((color, idx) => (
-        <ColorTile key={idx} color={color} />
-      ))}
-      {emptyTiles}
-      <TargetColorTile color={targetColor} />
+      {children}
     </div>
   );
 }

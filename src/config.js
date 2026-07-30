@@ -9,13 +9,3 @@ export const GAME_CONFIG = {
     },
   },
 };
-
-export const CHANNELS = ["red", "green", "blue"];
-
-export function tileCount(board) {
-  return board.columns * board.rows - 1;
-}
-
-export function maxMoves(board) {
-  return tileCount(board) - 1;
-}
