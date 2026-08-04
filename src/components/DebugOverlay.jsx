@@ -10,8 +10,8 @@ export default function DebugOverlay({ colors }) {
         color: "#444",
       }}
     >
-      {colors.map((color, idx) => (
-        <span key={idx}>
+      {colors.map((color) => (
+        <span key={color}>
           {colorToIntArray(color)
             .map((v) => String(v).padStart(3))
             .join(" ")}
