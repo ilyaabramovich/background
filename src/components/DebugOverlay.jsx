@@ -13,8 +13,8 @@ export default function DebugOverlay({ colors }) {
         whiteSpace: "pre",
       }}
     >
-      {colors.map((color) => (
-        <span key={color}>
+      {colors.map((color, idx) => (
+        <span key={idx}>
           {colorToIntArray(color)
             .map((v) => String(v).padStart(3))
             .join(" ")}

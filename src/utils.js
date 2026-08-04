@@ -1,6 +1,11 @@
 const MAX_RGB_COLORS = 16777216;
 const MAX_CHANNEL = 0xff;
 
+// Black and white text land on equal contrast ratios where 1.05/(L+0.05) meets
+// (L+0.05)/0.05, so that luminance (~0.1791) is where the better choice flips. Rounding
+// this constant misfiles the colors sitting in the thin band around it.
+const CONTRAST_PIVOT = Math.sqrt(1.05 * 0.05) - 0.05;
+
 function clampChannel(value) {
   return Math.min(Math.max(value, 0), MAX_CHANNEL);
 }
@@ -20,6 +25,14 @@ export function offsetChannel(colorInt, channelIndex, amount) {
   return packColor(channels);
 }
 
+// A CSS gradient with no interpolation hint blends in sRGB, so a plain per-channel average
+// is exactly the color sitting at the gradient's midpoint, not an approximation of it.
+export function mixColors(colorInt, otherColorInt) {
+  const other = colorToIntArray(otherColorInt);
+
+  return packColor(colorToIntArray(colorInt).map((value, i) => Math.round((value + other[i]) / 2)));
+}
+
 // WCAG relative luminance: channels are linearized out of sRGB before being weighted,
 // because the eye is far more sensitive to green than to blue.
 function relativeLuminance(colorInt) {
@@ -31,11 +44,6 @@ function relativeLuminance(colorInt) {
 
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
-
-// Black and white text land on equal contrast ratios where 1.05/(L+0.05) meets
-// (L+0.05)/0.05, so that luminance (~0.1791) is where the better choice flips. Rounding
-// this constant misfiles the colors sitting in the thin band around it.
-const CONTRAST_PIVOT = Math.sqrt(1.05 * 0.05) - 0.05;
 
 export function contrastingColor(colorInt) {
   return relativeLuminance(colorInt) > CONTRAST_PIVOT ? 0x000000 : 0xffffff;

@@ -13,6 +13,7 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
   const currentColor = moves.at(-1) ?? initialColor;
   const isOver = moves.length >= MAX_MOVES;
   const hasWon = isOver && currentColor === targetColor;
+  const status = isOver ? (hasWon ? "You won yay!" : "Not this time") : null;
 
   function handleMove(nextColor) {
     setMoves((moves) => (isOver ? moves : [...moves, nextColor]));
@@ -28,7 +29,7 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
 
   return (
     <>
-      <GameBoard layout={board} from={initialColor} to={targetColor} revealed={hasWon}>
+      <GameBoard layout={board} from={initialColor} to={targetColor} status={status}>
         {Array.from({ length: MAX_MOVES }, (_, idx) => (
           <Tile key={idx} color={moves[idx] ?? null} />
         ))}
@@ -44,7 +45,6 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
         color={currentColor}
         step={offsetMultiplier}
         isOver={isOver}
-        hasWon={hasWon}
         onMove={handleMove}
       />
     </>

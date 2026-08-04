@@ -4,6 +4,7 @@ import {
   contrastingColor,
   formatColor,
   generateOffsets,
+  mixColors,
   offsetChannel,
   offsetColor,
   randomColor,
@@ -131,6 +132,44 @@ describe("contrastingColor", () => {
     }
 
     expect(worst).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("mixColors", () => {
+  it("averages each channel independently", () => {
+    expect(mixColors(0x000000, 0xffffff)).toBe(0x808080);
+    expect(mixColors(0x0a1400, 0x141e00)).toBe(0x0f1900);
+  });
+
+  it("leaves a color mixed with itself untouched", () => {
+    for (let i = 0; i < 100; i++) {
+      const color = randomColor();
+
+      expect(mixColors(color, color)).toBe(color);
+    }
+  });
+
+  it("does not depend on the order of its arguments", () => {
+    for (let i = 0; i < 100; i++) {
+      const [a, b] = [randomColor(), randomColor()];
+
+      expect(mixColors(a, b)).toBe(mixColors(b, a));
+    }
+  });
+
+  it("stays inside the channel range and between the two inputs", () => {
+    for (let i = 0; i < 500; i++) {
+      const [a, b] = [randomColor(), randomColor()];
+      const mixed = colorToIntArray(mixColors(a, b));
+
+      colorToIntArray(a).forEach((low, channel) => {
+        const [min, max] = [low, colorToIntArray(b)[channel]].sort((x, y) => x - y);
+
+        expect(Number.isInteger(mixed[channel])).toBe(true);
+        expect(mixed[channel]).toBeGreaterThanOrEqual(min);
+        expect(mixed[channel]).toBeLessThanOrEqual(max);
+      });
+    }
   });
 });
 

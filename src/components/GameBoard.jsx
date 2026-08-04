@@ -1,7 +1,7 @@
-import { formatColor } from "../utils";
+import { contrastingColor, formatColor, mixColors } from "../utils";
 import Tile from "./Tile";
 
-export default function GameBoard({ layout, from, to, revealed, children }) {
+export default function GameBoard({ layout, from, to, status, children }) {
   return (
     <div className="min-h-0 @container-size">
       <div
@@ -16,13 +16,17 @@ export default function GameBoard({ layout, from, to, revealed, children }) {
         {children}
         <Tile color={to} />
         <div
-          className={`pointer-events-none absolute inset-0 transition-opacity duration-700 motion-reduce:transition-none ${
-            revealed ? "opacity-100" : "opacity-0"
+          className={`pointer-events-none absolute inset-0 grid place-content-center transition-opacity duration-700 motion-reduce:transition-none ${
+            status ? "opacity-100" : "opacity-0"
           }`}
           style={{
             backgroundImage: `linear-gradient(to bottom right, ${formatColor(from)}, ${formatColor(to)})`,
+            // The status text is centered, so it only ever sits on the middle of the gradient.
+            color: formatColor(contrastingColor(mixColors(from, to))),
           }}
-        />
+        >
+          <p className="text-2xl font-bold">{status}</p>
+        </div>
       </div>
     </div>
   );
