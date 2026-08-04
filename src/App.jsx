@@ -1,23 +1,21 @@
 import { useState } from "react";
-import { GAME_CONFIG, MAX_MOVES } from "./config";
-import { randomColor, offsetColor, generateOffsets } from "./utils";
+import { GAME_CONFIG } from "./config";
+import { createPuzzle, dailySeed } from "./puzzle";
 import Game from "./components/Game";
 
 let nextGameId = 0;
 
-function createGame() {
-  const initialColor = randomColor();
-  const offsets = generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier);
-
+// date is the day whose board this is, or null for a free-play board off a random seed.
+function createGame(date) {
   return {
     id: nextGameId++,
-    initialColor,
-    targetColor: offsetColor(initialColor, offsets),
+    date,
+    ...(date === null ? createPuzzle() : createPuzzle(dailySeed(date))),
   };
 }
 
 function App() {
-  const [game, setGame] = useState(createGame);
+  const [game, setGame] = useState(() => createGame(new Date()));
 
   return (
     <main className="grid h-dvh justify-center p-(--pad)">
@@ -26,7 +24,9 @@ function App() {
           key={game.id}
           initialColor={game.initialColor}
           targetColor={game.targetColor}
-          onReset={() => setGame(createGame())}
+          date={game.date}
+          onNewGame={() => setGame(createGame(null))}
+          onDaily={() => setGame(createGame(new Date()))}
           config={GAME_CONFIG}
         />
       </div>

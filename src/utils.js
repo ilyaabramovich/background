@@ -1,6 +1,10 @@
 const MAX_RGB_COLORS = 16777216;
 const MAX_CHANNEL = 0xff;
 
+// Every draw goes through an injected randomInt(max) so a board can be rebuilt from a seed; see
+// createRandomInt in random.js. Unseeded play falls back to this, and max is inclusive.
+const defaultRandomInt = (max) => Math.floor(Math.random() * (max + 1));
+
 // Black and white text land on equal contrast ratios where 1.05/(L+0.05) meets
 // (L+0.05)/0.05, so that luminance (~0.1791) is where the better choice flips. Rounding
 // this constant misfiles the colors sitting in the thin band around it.
@@ -61,8 +65,8 @@ export function describeColor(colorInt) {
   return `red ${red}, green ${green}, blue ${blue}`;
 }
 
-export function randomColor() {
-  return Math.floor(Math.random() * MAX_RGB_COLORS);
+export function randomColor(randomInt = defaultRandomInt) {
+  return randomInt(MAX_RGB_COLORS - 1);
 }
 
 export function colorToIntArray(colorInt) {
@@ -76,12 +80,12 @@ export function colorToIntArray(colorInt) {
 // Now that channels clamp instead of wrapping, an offset that runs past 0 or 255 would
 // produce a target no sequence of steps can reach. So the direction is chosen from the
 // headroom the channel actually has rather than by coin flip.
-function pickDirection(value, distance) {
+function pickDirection(value, distance, randomInt) {
   const canIncrease = value + distance <= MAX_CHANNEL;
   const canDecrease = value - distance >= 0;
 
   if (canIncrease && canDecrease) {
-    return Math.random() < 0.5 ? 1 : -1;
+    return randomInt(1) === 0 ? 1 : -1;
   }
   if (canIncrease || canDecrease) {
     return canIncrease ? 1 : -1;
@@ -121,9 +125,11 @@ function fitToHeadroom(magnitudes, channels, step) {
   return fitted;
 }
 
-export function generateOffsets(moveCount, initialColor, step = 1) {
-  const p1 = Math.floor(Math.random() * (moveCount + 1));
-  const p2 = Math.floor(Math.random() * (moveCount + 1));
+// The order and count of draws below is what a seed reproduces, so changing it renumbers every
+// past daily board. src/puzzle.test.js pins the first thirty days against exactly that.
+export function generateOffsets(moveCount, initialColor, step = 1, randomInt = defaultRandomInt) {
+  const p1 = randomInt(moveCount);
+  const p2 = randomInt(moveCount);
 
   const [min, max] = [p1, p2].sort((a, b) => a - b);
   const channels = colorToIntArray(initialColor);
@@ -132,6 +138,6 @@ export function generateOffsets(moveCount, initialColor, step = 1) {
   return magnitudes.map((magnitude, index) => {
     const distance = magnitude * step;
 
-    return distance * pickDirection(channels[index], distance);
+    return distance * pickDirection(channels[index], distance, randomInt);
   });
 }

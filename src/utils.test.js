@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { GAME_CONFIG, MAX_MOVES } from "./config";
 import {
   colorToIntArray,
@@ -241,10 +241,6 @@ describe("randomColor", () => {
 });
 
 describe("generateOffsets", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("produces three integer offsets whose magnitudes sum to every move", () => {
     for (let moveCount = 0; moveCount <= 12; moveCount++) {
       for (const step of [1, 10]) {
@@ -308,24 +304,28 @@ describe("generateOffsets", () => {
   // is 140 of travel, which a channel sitting near the middle cannot absorb in either
   // direction, so those draws used to produce a target no sequence of moves could reach.
   it("survives every move landing on a single channel", () => {
-    // Cut points of (7,7), (0,7) and (0,0) put the whole move budget on one channel.
-    const drawsPerChannel = [
-      [0.99, 0.99],
-      [0, 0.99],
+    // Cut points of (7,7), (0,7) and (0,0) put the whole move budget on one channel. Later
+    // draws are pickDirection's, and any value does for those.
+    const cutPointsPerChannel = [
+      [MAX_MOVES, MAX_MOVES],
+      [0, MAX_MOVES],
       [0, 0],
     ];
 
-    drawsPerChannel.forEach((draws, loadedChannel) => {
+    cutPointsPerChannel.forEach((cutPoints, loadedChannel) => {
       for (let value = 0; value <= 255; value++) {
-        vi.spyOn(Math, "random")
-          .mockReturnValueOnce(draws[0])
-          .mockReturnValueOnce(draws[1])
-          .mockReturnValue(0.4);
+        const queue = [...cutPoints];
+        const randomInt = () => queue.shift() ?? 0;
 
         const channels = [0, 0, 0];
         channels[loadedChannel] = value;
         const initialColor = (channels[0] << 16) | (channels[1] << 8) | channels[2];
-        const offsets = generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier);
+        const offsets = generateOffsets(
+          MAX_MOVES,
+          initialColor,
+          GAME_CONFIG.offsetMultiplier,
+          randomInt,
+        );
 
         expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(
           MAX_MOVES * GAME_CONFIG.offsetMultiplier,
@@ -336,8 +336,6 @@ describe("generateOffsets", () => {
           expect(exact).toBeGreaterThanOrEqual(0);
           expect(exact).toBeLessThanOrEqual(255);
         });
-
-        vi.restoreAllMocks();
       }
     });
   });

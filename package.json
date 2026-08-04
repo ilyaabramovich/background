@@ -14,6 +14,7 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "pure-rand": "8.4.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },

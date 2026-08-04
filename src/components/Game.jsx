@@ -5,9 +5,10 @@ import Tile from "./Tile";
 import GameBoard from "./GameBoard";
 import GameActions from "./GameActions";
 import { describeColor } from "../utils";
+import { formatPuzzleDate } from "../puzzle";
 import { MAX_MOVES } from "../config";
 
-export default function Game({ initialColor, targetColor, onReset, config }) {
+export default function Game({ initialColor, targetColor, date, onNewGame, onDaily, config }) {
   const { board, offsetMultiplier } = config;
   const [moves, setMoves] = useState([]);
 
@@ -36,14 +37,16 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
         ))}
       </GameBoard>
       <p className="sr-only" aria-live="polite">
-        {`Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
+        {`${date === null ? "Free play" : formatPuzzleDate(date)}. Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
       </p>
       {import.meta.env.DEV && <DebugOverlay colors={[currentColor, targetColor]} />}
       <GameActions
         moveCount={moves.length}
+        date={date}
         onGoBack={goBack}
         onRestart={restartGame}
-        onNewGame={onReset}
+        onNewGame={onNewGame}
+        onDaily={onDaily}
       />
       <ControlPad
         color={currentColor}
