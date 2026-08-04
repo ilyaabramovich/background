@@ -53,6 +53,14 @@ export function formatColor(colorInt) {
   return `#${colorInt.toString(16).padStart(6, "0")}`;
 }
 
+// The board says everything through color alone, so the only way to follow a game without
+// seeing it is to have the channels spelled out.
+export function describeColor(colorInt) {
+  const [red, green, blue] = colorToIntArray(colorInt);
+
+  return `red ${red}, green ${green}, blue ${blue}`;
+}
+
 export function randomColor() {
   return Math.floor(Math.random() * MAX_RGB_COLORS);
 }
@@ -79,9 +87,38 @@ function pickDirection(value, distance) {
     return canIncrease ? 1 : -1;
   }
 
-  // Only when distance exceeds half the channel range, i.e. the board asks for more moves
-  // than a channel can absorb. The target is unreachable either way; take the roomier side.
+  // Only reached when the board asks for more moves than all three channels together can
+  // absorb. The target is unreachable either way; take the roomier side.
   return value < MAX_CHANNEL - value ? 1 : -1;
+}
+
+// A channel always has at least half the range free on one side, so it can hold this many
+// steps no matter which direction pickDirection ends up choosing.
+function headroomInMoves(value, step) {
+  return Math.floor(Math.max(value, MAX_CHANNEL - value) / step);
+}
+
+// The random three-way split above knows nothing about where the channels start, so it can
+// hand a channel more steps than it can travel without clamping — and a clamped target is
+// one no sequence of moves can reach. Overflow moves are passed to a channel that still has
+// room, which keeps the total at moveCount and so keeps the target exactly that far away.
+function fitToHeadroom(magnitudes, channels, step) {
+  const capacities = channels.map((value) => headroomInMoves(value, step));
+  const fitted = [...magnitudes];
+
+  for (let channel = 0; channel < fitted.length; channel++) {
+    while (fitted[channel] > capacities[channel]) {
+      const spare = fitted.findIndex((moves, i) => i !== channel && moves < capacities[i]);
+
+      // Only when the whole board asks for more than the color space can hold.
+      if (spare === -1) break;
+
+      fitted[channel]--;
+      fitted[spare]++;
+    }
+  }
+
+  return fitted;
 }
 
 export function generateOffsets(moveCount, initialColor, step = 1) {
@@ -89,8 +126,8 @@ export function generateOffsets(moveCount, initialColor, step = 1) {
   const p2 = Math.floor(Math.random() * (moveCount + 1));
 
   const [min, max] = [p1, p2].sort((a, b) => a - b);
-  const magnitudes = [min, max - min, moveCount - max];
   const channels = colorToIntArray(initialColor);
+  const magnitudes = fitToHeadroom([min, max - min, moveCount - max], channels, step);
 
   return magnitudes.map((magnitude, index) => {
     const distance = magnitude * step;

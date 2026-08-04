@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { GAME_CONFIG, MAX_MOVES } from "./config";
 import {
   colorToIntArray,
   contrastingColor,
+  describeColor,
   formatColor,
   generateOffsets,
   mixColors,
@@ -198,6 +200,26 @@ describe("formatColor", () => {
   });
 });
 
+describe("describeColor", () => {
+  it("names each channel with its value", () => {
+    expect(describeColor(0x0a141e)).toBe("red 10, green 20, blue 30");
+    expect(describeColor(0x000000)).toBe("red 0, green 0, blue 0");
+    expect(describeColor(0xffffff)).toBe("red 255, green 255, blue 255");
+  });
+
+  it("reports the same channels colorToIntArray unpacks", () => {
+    for (let i = 0; i < 100; i++) {
+      const color = randomColor();
+
+      expect(describeColor(color)).toBe(
+        colorToIntArray(color)
+          .map((value, channel) => `${["red", "green", "blue"][channel]} ${value}`)
+          .join(", "),
+      );
+    }
+  });
+});
+
 describe("colorToIntArray", () => {
   it("unpacks the channels in red, green, blue order", () => {
     expect(colorToIntArray(0x0a141e)).toEqual([10, 20, 30]);
@@ -219,6 +241,10 @@ describe("randomColor", () => {
 });
 
 describe("generateOffsets", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("produces three integer offsets whose magnitudes sum to every move", () => {
     for (let moveCount = 0; moveCount <= 12; moveCount++) {
       for (const step of [1, 10]) {
@@ -235,12 +261,12 @@ describe("generateOffsets", () => {
     }
   });
 
-  // A channel with 128 of headroom can always absorb the offset in one direction or the
-  // other, so every board up to that size must land its target strictly inside 0-255.
+  // Every channel keeps at least 128 of headroom on one side or the other, so with three
+  // channels a board can place 3 * floor(128 / step) moves and still land inside 0-255.
   it("never places the target past a channel edge", () => {
     const step = 10;
 
-    for (let moveCount = 0; moveCount * step <= 128; moveCount++) {
+    for (let moveCount = 0; moveCount <= 3 * Math.floor(128 / step); moveCount++) {
       for (let draw = 0; draw < 100; draw++) {
         const initialColor = randomColor();
         const channels = colorToIntArray(initialColor);
@@ -252,6 +278,84 @@ describe("generateOffsets", () => {
           expect(exact).toBeLessThanOrEqual(255);
         });
       }
+    }
+  });
+
+  // Reads the real board rather than a hand-picked step, so the shipped game can never
+  // drift outside what the reachability guarantee above was proven against.
+  it("never places the target past a channel edge at the shipped config", () => {
+    const unreachable = [];
+
+    for (let draw = 0; draw < 20000; draw++) {
+      const initialColor = randomColor();
+      const channels = colorToIntArray(initialColor);
+
+      generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier).forEach(
+        (offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          if (exact < 0 || exact > 255) {
+            unreachable.push({ initialColor, channel, exact });
+          }
+        },
+      );
+    }
+
+    expect(unreachable).toEqual([]);
+  });
+
+  // The three-way split can hand every move to one channel. At the shipped multiplier that
+  // is 140 of travel, which a channel sitting near the middle cannot absorb in either
+  // direction, so those draws used to produce a target no sequence of moves could reach.
+  it("survives every move landing on a single channel", () => {
+    // Cut points of (7,7), (0,7) and (0,0) put the whole move budget on one channel.
+    const drawsPerChannel = [
+      [0.99, 0.99],
+      [0, 0.99],
+      [0, 0],
+    ];
+
+    drawsPerChannel.forEach((draws, loadedChannel) => {
+      for (let value = 0; value <= 255; value++) {
+        vi.spyOn(Math, "random")
+          .mockReturnValueOnce(draws[0])
+          .mockReturnValueOnce(draws[1])
+          .mockReturnValue(0.4);
+
+        const channels = [0, 0, 0];
+        channels[loadedChannel] = value;
+        const initialColor = (channels[0] << 16) | (channels[1] << 8) | channels[2];
+        const offsets = generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier);
+
+        expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(
+          MAX_MOVES * GAME_CONFIG.offsetMultiplier,
+        );
+        offsets.forEach((offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          expect(exact).toBeGreaterThanOrEqual(0);
+          expect(exact).toBeLessThanOrEqual(255);
+        });
+
+        vi.restoreAllMocks();
+      }
+    });
+  });
+
+  // The tightest board there is: no channel has more than 128 of headroom on either side.
+  it("places a reachable target when every channel starts mid-range", () => {
+    for (let draw = 0; draw < 2000; draw++) {
+      const initialColor = 0x808080;
+      const channels = colorToIntArray(initialColor);
+
+      generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier).forEach(
+        (offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          expect(exact).toBeGreaterThanOrEqual(0);
+          expect(exact).toBeLessThanOrEqual(255);
+        },
+      );
     }
   });
 

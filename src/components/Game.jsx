@@ -4,6 +4,7 @@ import DebugOverlay from "./DebugOverlay";
 import Tile from "./Tile";
 import GameBoard from "./GameBoard";
 import GameActions from "./GameActions";
+import { describeColor } from "../utils";
 import { MAX_MOVES } from "../config";
 
 export default function Game({ initialColor, targetColor, onReset, config }) {
@@ -34,6 +35,9 @@ export default function Game({ initialColor, targetColor, onReset, config }) {
           <Tile key={idx} color={moves[idx] ?? null} />
         ))}
       </GameBoard>
+      <p className="sr-only" aria-live="polite">
+        {`Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
+      </p>
       {import.meta.env.DEV && <DebugOverlay colors={[currentColor, targetColor]} />}
       <GameActions
         moveCount={moves.length}

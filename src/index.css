@@ -14,6 +14,12 @@
     --pad: 1rem;
     --max-w: 30rem;
     --actions-h: 2.625rem;
+
+    /* The board and the control pad are both driven off one width. Widest it may go is the
+       viewport (capped at --max-w) minus the page padding; tallest is the share of the
+       viewport left once the actions row and the gaps are paid for, so the board never
+       pushes the controls off screen. The 9rem floor keeps three tappable columns on the
+       narrowest phones even when that means scrolling. */
     --side: max(
       calc(9rem + 2 * var(--gap)),
       min(

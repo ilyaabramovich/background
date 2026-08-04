@@ -1,7 +1,19 @@
+import { useEffect, useRef } from "react";
 import { contrastingColor, formatColor, mixColors } from "../utils";
 import Tile from "./Tile";
 
 export default function GameBoard({ layout, from, to, status, children }) {
+  const resultRef = useRef(null);
+
+  // The controls unmount the moment the game ends, which would otherwise drop focus onto
+  // the body. Moving it to the result both keeps focus somewhere sensible and gets the
+  // outcome read out, without an aria-live region repeating what the board already says.
+  useEffect(() => {
+    if (status) {
+      resultRef.current.focus();
+    }
+  }, [status]);
+
   return (
     <div className="min-h-0 @container-size">
       <div
@@ -25,7 +37,9 @@ export default function GameBoard({ layout, from, to, status, children }) {
             color: formatColor(contrastingColor(mixColors(from, to))),
           }}
         >
-          <p className="text-2xl font-bold">{status}</p>
+          <p ref={resultRef} tabIndex={-1} className="text-2xl font-bold focus:outline-none">
+            {status}
+          </p>
         </div>
       </div>
     </div>
