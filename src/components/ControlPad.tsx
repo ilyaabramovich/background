@@ -1,5 +1,5 @@
 import ControlTile from "./ControlTile";
-import { offsetChannel } from "../utils";
+import { CHANNEL_ORDER, offsetChannel } from "../utils";
 import type { Color } from "../utils";
 
 const CHANNELS = ["red", "green", "blue"];
@@ -30,7 +30,8 @@ export default function ControlPad({ color, step, isOver, onMove }: ControlPadPr
         </h2>
       ))}
       {[1, -1].flatMap((delta) =>
-        CHANNELS.map((name, channel) => {
+        CHANNEL_ORDER.map((channel) => {
+          const name = CHANNELS[channel];
           const amount = delta * step;
           const nextColor = offsetChannel(color, channel, amount);
 

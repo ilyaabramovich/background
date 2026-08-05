@@ -7,7 +7,7 @@ import GameActions from "./GameActions";
 import { describeColor } from "../utils";
 import type { Color } from "../utils";
 import { formatPuzzleDate } from "../puzzle";
-import { MAX_MOVES } from "../config";
+import { GAME_STATUS, MAX_MOVES } from "../config";
 import type { GameConfig } from "../config";
 
 type GameProps = {
@@ -36,7 +36,7 @@ export default function Game({
   const currentColor = moves.at(-1) ?? initialColor;
   const isOver = moves.length >= MAX_MOVES;
   const hasWon = isOver && currentColor === targetColor;
-  const status = isOver ? (hasWon ? "You won yay!" : "Not this time") : null;
+  const status = isOver ? (hasWon ? GAME_STATUS.won : GAME_STATUS.lost) : null;
 
   function handleMove(nextColor: Color) {
     setMoves((moves) => (isOver ? moves : [...moves, nextColor]));

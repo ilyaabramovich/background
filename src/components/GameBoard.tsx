@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { contrastingColor, formatColor, mixColors } from "../utils";
 import type { Color } from "../utils";
-import type { BoardLayout } from "../config";
+import type { BoardLayout, GameStatus } from "../config";
 import Tile from "./Tile";
 
 type GameBoardProps = {
@@ -9,7 +9,7 @@ type GameBoardProps = {
   from: Color;
   to: Color;
   // null while the game is still going, which is what the effect below watches for.
-  status: string | null;
+  status: GameStatus | null;
   children: React.ReactNode;
 };
 

@@ -4,6 +4,15 @@ import type { RandomInt } from "./random";
 // just as often a single channel, an offset or a step, and nothing but the name separates them.
 export type Color = number;
 
+// Which channel of a packed color, by position. Narrow on purpose: a Color is not assignable to
+// it, so offsetChannel's first two arguments can no longer be swapped without a compile error,
+// which is the one mistake in here that produces a plausible wrong color rather than a crash.
+export type Channel = 0 | 1 | 2;
+
+// Every channel, in packed order. Worth keeping as a value because the index .map hands a
+// callback is a plain number: iterating this is how a caller gets a Channel without asserting.
+export const CHANNEL_ORDER: readonly Channel[] = [0, 1, 2];
+
 const MAX_RGB_COLORS = 16777216;
 const MAX_CHANNEL = 0xff;
 
@@ -31,7 +40,7 @@ export function offsetColor(colorInt: Color, offsets: number[]): Color {
   return packColor(colorToIntArray(colorInt).map((value, i) => clampChannel(value + offsets[i])));
 }
 
-export function offsetChannel(colorInt: Color, channelIndex: number, amount: number): Color {
+export function offsetChannel(colorInt: Color, channelIndex: Channel, amount: number): Color {
   const channels = colorToIntArray(colorInt);
   channels[channelIndex] = clampChannel(channels[channelIndex] + amount);
 

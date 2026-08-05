@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { MAX_MOVES } from "../src/config.js";
+import { GAME_STATUS, MAX_MOVES } from "../src/config.js";
 import {
   button,
   heading,
@@ -20,7 +20,7 @@ test("wins the board when every move closes the gap to the target", async ({ pag
 
   await play(page, solution(current, target));
 
-  await expect(status(page)).toHaveText("You won yay!");
+  await expect(status(page)).toHaveText(GAME_STATUS.won);
   await expect(moveCounter(page)).toHaveText(`Moves: ${MAX_MOVES}/${MAX_MOVES}`);
   const finished = await readColors(page);
   expect(finished.current).toBe(finished.target);
@@ -31,7 +31,7 @@ test("loses the board when the last move is spent elsewhere", async ({ page }) =
 
   await play(page, misplay(current, target));
 
-  await expect(status(page)).toHaveText("Not this time");
+  await expect(status(page)).toHaveText(GAME_STATUS.lost);
   const finished = await readColors(page);
   expect(finished.current).not.toBe(finished.target);
 });

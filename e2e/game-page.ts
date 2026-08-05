@@ -1,12 +1,12 @@
 import type { Page } from "@playwright/test";
-import { GAME_CONFIG, MAX_MOVES } from "../src/config.js";
-import { colorToIntArray, offsetChannel } from "../src/utils.js";
-import type { Color } from "../src/utils.js";
+import { GAME_CONFIG, GAME_STATUS, MAX_MOVES } from "../src/config.js";
+import { CHANNEL_ORDER, colorToIntArray, offsetChannel } from "../src/utils.js";
+import type { Channel, Color } from "../src/utils.js";
 
 // One click: a channel to move and which way. delta stays a plain number because solution
 // builds it out of Math.sign, and applyMoves only ever multiplies it by STEP.
 export type Move = {
-  channel: number;
+  channel: Channel;
   delta: number;
 };
 
@@ -24,7 +24,7 @@ export function heading(page: Page) {
 }
 
 export function status(page: Page) {
-  return page.getByText(/You won yay!|Not this time/);
+  return page.getByText(GAME_STATUS.won).or(page.getByText(GAME_STATUS.lost));
 }
 
 export function moveCounter(page: Page) {
@@ -70,9 +70,11 @@ export function solution(current: Color, target: Color): Move[] {
     throw new Error(`Target is not a whole number of ${STEP}-sized steps away: ${distances}`);
   }
 
-  const moves = distances.flatMap((steps, channel) =>
-    Array.from({ length: Math.abs(steps) }, () => ({ channel, delta: Math.sign(steps) })),
-  );
+  const moves = CHANNEL_ORDER.flatMap((channel) => {
+    const steps = distances[channel];
+
+    return Array.from({ length: Math.abs(steps) }, () => ({ channel, delta: Math.sign(steps) }));
+  });
 
   if (moves.length !== MAX_MOVES) {
     throw new Error(`Board needs ${moves.length} moves, not the ${MAX_MOVES} it allows`);
@@ -87,7 +89,7 @@ export function solution(current: Color, target: Color): Move[] {
 export function misplay(current: Color, target: Color): Move[] {
   const moves = solution(current, target);
 
-  for (const channel of CHANNELS.keys()) {
+  for (const channel of CHANNEL_ORDER) {
     for (const delta of [1, -1]) {
       const candidate = [...moves.slice(0, -1), { channel, delta }];
 
