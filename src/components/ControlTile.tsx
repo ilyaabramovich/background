@@ -2,8 +2,6 @@ import { contrastingColor, formatColor } from "../color";
 import type { Color } from "../color";
 
 type ControlTileProps = {
-  // The color this tile would produce, which is both what it paints itself and what it hands
-  // back when clicked.
   color: Color;
   label: string;
   onClick: (color: Color) => void;

@@ -121,7 +121,7 @@ export function formatPuzzleDate(date: Date, locale?: string): string {
   let formatter = DATE_LABEL.get(locale);
 
   if (formatter === undefined) {
-    formatter = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
+    formatter = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" });
     DATE_LABEL.set(locale, formatter);
   }
 

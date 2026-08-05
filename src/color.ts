@@ -21,8 +21,6 @@ export const CHANNELS = [
   { channel: 2, name: "blue" },
 ] as const satisfies readonly { channel: Channel; name: string }[];
 
-// The widest a channel goes. Exported for puzzle.ts, which sizes a board's moves against the
-// headroom a channel has left.
 export const MAX_CHANNEL = 0xff;
 
 // Black and white text land on equal contrast ratios where 1.05/(L+0.05) meets
@@ -80,8 +78,6 @@ export function formatColor(colorInt: Color): string {
   return `#${colorInt.toString(16).padStart(6, "0")}`;
 }
 
-// The board says everything through color alone, so the only way to follow a game without
-// seeing it is to have the channels spelled out.
 export function describeColor(colorInt: Color): string {
   const channels = colorToIntArray(colorInt);
 

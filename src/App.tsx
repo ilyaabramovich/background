@@ -5,7 +5,6 @@ import Game from "./components/Game";
 
 let nextGameId = 0;
 
-// date is the day whose board this is, or null for a free-play board off a random seed.
 function createGame(date: Date | null) {
   return {
     id: nextGameId++,

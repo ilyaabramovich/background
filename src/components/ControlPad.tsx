@@ -11,9 +11,6 @@ type ControlPadProps = {
 
 export default function ControlPad({ color, step, isOver, onMove }: ControlPadProps) {
   return (
-    // Dimmed rather than hidden once the game is over: the result is drawn on the board now,
-    // so nothing needs this space, and keeping the tiles in place means no layout shift when
-    // Go back or Reset hands the controls straight back.
     <div
       className="grid gap-(--gap) grid-cols-[repeat(var(--control-columns),1fr)] [[inert]]:opacity-40"
       style={{ "--control-columns": CHANNELS.length }}
@@ -36,8 +33,6 @@ export default function ControlPad({ color, step, isOver, onMove }: ControlPadPr
             <ControlTile
               key={`${name}${delta}`}
               color={nextColor}
-              // The column heading carries the channel for sighted players, but each button
-              // still needs to name it on its own for screen readers.
               label={`${delta > 0 ? "Increase" : "Decrease"} ${name}`}
               onClick={onMove}
             >

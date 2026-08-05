@@ -104,8 +104,6 @@ describe("dailySeed", () => {
     expect(dailySeed(new Date(2026, 11, 31))).toBe(20818);
   });
 
-  // What the day number buys over a packed YYYYMMDD: one step per day everywhere, so month and
-  // year boundaries are not special cases and no integer in the range is a date that never was.
   it("steps by exactly one a day, month and year ends included", () => {
     for (let day = 0; day < 800; day++) {
       const today = new Date(2026, 0, 1 + day);
@@ -152,8 +150,8 @@ describe("dailySeed", () => {
 
 describe("formatPuzzleDate", () => {
   it("writes the date the way the given locale does", () => {
-    expect(formatPuzzleDate(new Date(2026, 7, 5), "en-GB")).toBe("5 Aug");
-    expect(formatPuzzleDate(new Date(2026, 7, 5), "en-US")).toBe("Aug 5");
+    expect(formatPuzzleDate(new Date(2026, 7, 5), "en-GB")).toBe("5 August 2026");
+    expect(formatPuzzleDate(new Date(2026, 7, 5), "en-US")).toBe("August 5, 2026");
   });
 
   it("reuses one formatter per locale", () => {

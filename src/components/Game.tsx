@@ -14,7 +14,6 @@ import { GAME_STATUS } from "../status";
 type GameProps = {
   initialColor: Color;
   targetColor: Color;
-  // null is a free-play board off a random seed, rather than the one belonging to a day.
   date: Date | null;
   onNewGame: () => void;
   onDaily: () => void;
@@ -30,8 +29,6 @@ export default function Game({
   config,
 }: GameProps) {
   const { board, offsetMultiplier } = config;
-  // Each move is the color it produced, not the step that got there, so the last entry is the
-  // board's current color and dropping it is Go back.
   const [moves, setMoves] = useState<Color[]>([]);
 
   const currentColor = moves.at(-1) ?? initialColor;
@@ -61,7 +58,6 @@ export default function Game({
           <Tile key={idx} color={moves[idx] ?? null} />
         ))}
       </GameBoard>
-      {/* The heading already names the board, so the running commentary stays on the colors. */}
       <p className="sr-only" aria-live="polite">
         {`Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
       </p>

@@ -9,7 +9,6 @@ type GameBoardProps = {
   layout: BoardLayout;
   from: Color;
   to: Color;
-  // null while the game is still going, which is what the effect below watches for.
   status: GameStatus | null;
   children: React.ReactNode;
 };
@@ -17,9 +16,6 @@ type GameBoardProps = {
 export default function GameBoard({ layout, from, to, status, children }: GameBoardProps) {
   const resultRef = useRef<HTMLParagraphElement>(null);
 
-  // The controls unmount the moment the game ends, which would otherwise drop focus onto
-  // the body. Moving it to the result both keeps focus somewhere sensible and gets the
-  // outcome read out, without an aria-live region repeating what the board already says.
   useEffect(() => {
     if (status) {
       resultRef.current?.focus();
@@ -45,7 +41,6 @@ export default function GameBoard({ layout, from, to, status, children }: GameBo
           }`}
           style={{
             backgroundImage: `linear-gradient(to bottom right, ${formatColor(from)}, ${formatColor(to)})`,
-            // The status text is centered, so it only ever sits on the middle of the gradient.
             color: formatColor(contrastingColor(mixColors(from, to))),
           }}
         >
