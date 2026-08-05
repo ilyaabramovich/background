@@ -19,7 +19,7 @@ function App() {
 
   return (
     <main className="grid h-dvh justify-center p-(--pad)">
-      <div className="grid w-(--side) grid-rows-[minmax(0,1fr)_auto_auto] gap-(--gap)">
+      <div className="@container grid w-(--side) grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-(--gap)">
         <Game
           key={game.id}
           initialColor={game.initialColor}

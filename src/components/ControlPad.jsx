@@ -13,14 +13,29 @@ export default function ControlPad({ color, step, isOver, onMove }) {
       style={{ "--control-columns": CHANNELS.length }}
       inert={isOver}
     >
+      {CHANNELS.map((name) => (
+        <h2
+          key={name}
+          className="text-center text-sm leading-none font-semibold tracking-widest uppercase"
+        >
+          {name}
+        </h2>
+      ))}
       {[1, -1].flatMap((delta) =>
         CHANNELS.map((name, channel) => {
           const amount = delta * step;
           const nextColor = offsetChannel(color, channel, amount);
 
           return (
-            <ControlTile key={`${name}${delta}`} color={nextColor} onClick={onMove}>
-              {name} {delta > 0 ? "+" : "-"}
+            <ControlTile
+              key={`${name}${delta}`}
+              color={nextColor}
+              // The column heading carries the channel for sighted players, but each button
+              // still needs to name it on its own for screen readers.
+              label={`${delta > 0 ? "Increase" : "Decrease"} ${name}`}
+              onClick={onMove}
+            >
+              {delta > 0 ? "+" : "−"}
             </ControlTile>
           );
         }),

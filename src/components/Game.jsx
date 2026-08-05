@@ -31,13 +31,17 @@ export default function Game({ initialColor, targetColor, date, onNewGame, onDai
 
   return (
     <>
+      <h1 className="text-center text-xl font-bold">
+        {date === null ? "Free play" : `Daily puzzle · ${formatPuzzleDate(date)}`}
+      </h1>
       <GameBoard layout={board} from={initialColor} to={targetColor} status={status}>
         {Array.from({ length: MAX_MOVES }, (_, idx) => (
           <Tile key={idx} color={moves[idx] ?? null} />
         ))}
       </GameBoard>
+      {/* The heading already names the board, so the running commentary stays on the colors. */}
       <p className="sr-only" aria-live="polite">
-        {`${date === null ? "Free play" : formatPuzzleDate(date)}. Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
+        {`Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
       </p>
       {import.meta.env.DEV && <DebugOverlay colors={[currentColor, targetColor]} />}
       <GameActions
