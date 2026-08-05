@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { GAME_STATUS, MAX_MOVES } from "../src/config.js";
+import { MAX_MOVES } from "../src/config.js";
+import { GAME_STATUS } from "../src/status.js";
 import {
   button,
   heading,

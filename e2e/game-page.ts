@@ -1,7 +1,8 @@
 import type { Page } from "@playwright/test";
-import { GAME_CONFIG, GAME_STATUS, MAX_MOVES } from "../src/config.js";
-import { CHANNELS, colorToIntArray, offsetChannel } from "../src/utils.js";
-import type { Channel, Color } from "../src/utils.js";
+import { GAME_CONFIG, MAX_MOVES } from "../src/config.js";
+import { GAME_STATUS } from "../src/status.js";
+import { CHANNELS, colorToIntArray, offsetChannel, packColor } from "../src/color.js";
+import type { Channel, Color } from "../src/color.js";
 
 // One click: a channel to move and which way. delta stays a plain number because solution
 // builds it out of Math.sign, and applyMoves only ever multiplies it by STEP.
@@ -13,10 +14,6 @@ export type Move = {
 const STEP = GAME_CONFIG.offsetMultiplier;
 const COLORS =
   /Current color red (\d+), green (\d+), blue (\d+)\. Target color red (\d+), green (\d+), blue (\d+)\./;
-
-function packColor([red, green, blue]: number[]): Color {
-  return (red << 16) | (green << 8) | blue;
-}
 
 export function heading(page: Page) {
   return page.getByRole("heading", { level: 1 });

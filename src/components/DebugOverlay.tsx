@@ -1,5 +1,5 @@
-import { colorToIntArray } from "../utils";
-import type { Color } from "../utils";
+import { colorToIntArray } from "../color";
+import type { Color } from "../color";
 
 export default function DebugOverlay({ colors }: { colors: Color[] }) {
   return (

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import { contrastingColor, formatColor, mixColors } from "../utils";
-import type { Color } from "../utils";
-import type { BoardLayout, GameStatus } from "../config";
+import { contrastingColor, formatColor, mixColors } from "../color";
+import type { Color } from "../color";
+import type { BoardLayout } from "../config";
+import type { GameStatus } from "../status";
 import Tile from "./Tile";
 
 type GameBoardProps = {

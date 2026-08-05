@@ -1,6 +1,6 @@
 import ControlTile from "./ControlTile";
-import { CHANNELS, offsetChannel } from "../utils";
-import type { Color } from "../utils";
+import { CHANNELS, offsetChannel } from "../color";
+import type { Color } from "../color";
 
 type ControlPadProps = {
   color: Color;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createPuzzle, dailySeed, formatPuzzleDate } from "./puzzle";
+import { createPuzzle, dailySeed, formatPuzzleDate, generateOffsets, randomColor } from "./puzzle";
 import { GAME_CONFIG, MAX_MOVES } from "./config";
-import { colorToIntArray } from "./utils";
+import { CHANNELS, colorToIntArray, offsetChannel, offsetColor } from "./color";
 
 // A seed only reproduces a board while the draws behind it stay put: the two cut points in
 // generateOffsets, then however many pickDirection takes. Reordering them, changing GAME_CONFIG,
@@ -75,8 +75,8 @@ describe("createPuzzle", () => {
     expect(boards.size).toBeGreaterThan(45);
   });
 
-  // The reachability guarantee from utils.test.ts has to survive the seeded path too, or a given
-  // day would be unwinnable for everyone at once rather than for one unlucky player.
+  // The reachability guarantee generateOffsets is held to below has to survive the seeded path
+  // too, or a day would be unwinnable for everyone at once rather than for one unlucky player.
   it("never hands a day a target it cannot reach", () => {
     const unreachable = [];
 
@@ -160,5 +160,161 @@ describe("formatPuzzleDate", () => {
     const date = new Date(2026, 7, 5);
 
     expect(formatPuzzleDate(date, "en-GB")).toBe(formatPuzzleDate(date, "en-GB"));
+  });
+});
+
+describe("randomColor", () => {
+  it("produces integers inside the 24-bit color space", () => {
+    for (let i = 0; i < 500; i++) {
+      const color = randomColor();
+
+      expect(Number.isInteger(color)).toBe(true);
+      expect(color).toBeGreaterThanOrEqual(0);
+      expect(color).toBeLessThanOrEqual(0xffffff);
+    }
+  });
+});
+
+describe("generateOffsets", () => {
+  it("produces three integer offsets whose magnitudes sum to every move", () => {
+    for (let moveCount = 0; moveCount <= 12; moveCount++) {
+      for (const step of [1, 10]) {
+        for (let draw = 0; draw < 50; draw++) {
+          const offsets = generateOffsets(moveCount, randomColor(), step);
+
+          expect(offsets).toHaveLength(3);
+          for (const offset of offsets) {
+            expect(Number.isInteger(offset)).toBe(true);
+          }
+          expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(moveCount * step);
+        }
+      }
+    }
+  });
+
+  // Every channel keeps at least 128 of headroom on one side or the other, so with three
+  // channels a board can place 3 * floor(128 / step) moves and still land inside 0-255.
+  it("never places the target past a channel edge", () => {
+    const step = 10;
+
+    for (let moveCount = 0; moveCount <= 3 * Math.floor(128 / step); moveCount++) {
+      for (let draw = 0; draw < 100; draw++) {
+        const initialColor = randomColor();
+        const channels = colorToIntArray(initialColor);
+
+        generateOffsets(moveCount, initialColor, step).forEach((offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          expect(exact).toBeGreaterThanOrEqual(0);
+          expect(exact).toBeLessThanOrEqual(255);
+        });
+      }
+    }
+  });
+
+  // Reads the real board rather than a hand-picked step, so the shipped game can never
+  // drift outside what the reachability guarantee above was proven against.
+  it("never places the target past a channel edge at the shipped config", () => {
+    const unreachable: { initialColor: number; channel: number; exact: number }[] = [];
+
+    for (let draw = 0; draw < 20000; draw++) {
+      const initialColor = randomColor();
+      const channels = colorToIntArray(initialColor);
+
+      generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier).forEach(
+        (offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          if (exact < 0 || exact > 255) {
+            unreachable.push({ initialColor, channel, exact });
+          }
+        },
+      );
+    }
+
+    expect(unreachable).toEqual([]);
+  });
+
+  // The three-way split can hand every move to one channel. At the shipped multiplier that
+  // is 140 of travel, which a channel sitting near the middle cannot absorb in either
+  // direction, so those draws used to produce a target no sequence of moves could reach.
+  it("survives every move landing on a single channel", () => {
+    // Cut points of (7,7), (0,7) and (0,0) put the whole move budget on one channel. Later
+    // draws are pickDirection's, and any value does for those.
+    const cutPointsPerChannel = [
+      [MAX_MOVES, MAX_MOVES],
+      [0, MAX_MOVES],
+      [0, 0],
+    ];
+
+    cutPointsPerChannel.forEach((cutPoints, loadedChannel) => {
+      for (let value = 0; value <= 255; value++) {
+        const queue = [...cutPoints];
+        const randomInt = () => queue.shift() ?? 0;
+
+        const channels = [0, 0, 0];
+        channels[loadedChannel] = value;
+        const initialColor = (channels[0] << 16) | (channels[1] << 8) | channels[2];
+        const offsets = generateOffsets(
+          MAX_MOVES,
+          initialColor,
+          GAME_CONFIG.offsetMultiplier,
+          randomInt,
+        );
+
+        expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(
+          MAX_MOVES * GAME_CONFIG.offsetMultiplier,
+        );
+        offsets.forEach((offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          expect(exact).toBeGreaterThanOrEqual(0);
+          expect(exact).toBeLessThanOrEqual(255);
+        });
+      }
+    });
+  });
+
+  // The tightest board there is: no channel has more than 128 of headroom on either side.
+  it("places a reachable target when every channel starts mid-range", () => {
+    for (let draw = 0; draw < 2000; draw++) {
+      const initialColor = 0x808080;
+      const channels = colorToIntArray(initialColor);
+
+      generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier).forEach(
+        (offset, channel) => {
+          const exact = channels[channel] + offset;
+
+          expect(exact).toBeGreaterThanOrEqual(0);
+          expect(exact).toBeLessThanOrEqual(255);
+        },
+      );
+    }
+  });
+
+  it("leaves the target reachable in exactly moveCount steps", () => {
+    const step = 10;
+    const moveCount = 7;
+
+    for (let draw = 0; draw < 200; draw++) {
+      const initialColor = randomColor();
+      const offsets = generateOffsets(moveCount, initialColor, step);
+      const target = offsetColor(initialColor, offsets);
+
+      let color = initialColor;
+      let played = 0;
+
+      CHANNELS.forEach(({ channel }) => {
+        const offset = offsets[channel];
+
+        for (let i = 0; i < Math.abs(offset) / step; i++) {
+          color = offsetChannel(color, channel, Math.sign(offset) * step);
+          played++;
+        }
+      });
+
+      expect(color).toBe(target);
+      expect(played).toBe(moveCount);
+    }
   });
 });

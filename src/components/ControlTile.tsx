@@ -1,5 +1,5 @@
-import { contrastingColor, formatColor } from "../utils";
-import type { Color } from "../utils";
+import { contrastingColor, formatColor } from "../color";
+import type { Color } from "../color";
 
 type ControlTileProps = {
   // The color this tile would produce, which is both what it paints itself and what it hands

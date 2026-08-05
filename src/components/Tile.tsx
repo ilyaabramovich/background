@@ -1,5 +1,5 @@
-import { formatColor } from "../utils";
-import type { Color } from "../utils";
+import { formatColor } from "../color";
+import type { Color } from "../color";
 
 // A null color is a move not yet played, which leaves the tile transparent.
 export default function Tile({ color }: { color: Color | null }) {

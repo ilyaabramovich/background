@@ -4,11 +4,12 @@ import DebugOverlay from "./DebugOverlay";
 import Tile from "./Tile";
 import GameBoard from "./GameBoard";
 import GameActions from "./GameActions";
-import { describeColor } from "../utils";
-import type { Color } from "../utils";
+import { describeColor } from "../color";
+import type { Color } from "../color";
 import { formatPuzzleDate } from "../puzzle";
-import { GAME_STATUS, MAX_MOVES } from "../config";
+import { MAX_MOVES } from "../config";
 import type { GameConfig } from "../config";
+import { GAME_STATUS } from "../status";
 
 type GameProps = {
   initialColor: Color;
