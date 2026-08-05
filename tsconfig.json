@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+
+    // Temporary, for the migration only: lets a converted file import one that is still
+    // plain JS without tripping TS7016, so the tree stays checkable at every commit.
+    // Removing this is the last step, and its absence is what proves nothing was left behind.
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts"]
+}
