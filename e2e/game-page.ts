@@ -103,3 +103,33 @@ export async function play(page: Page, moves: Move[]) {
     await button(page, `${delta > 0 ? "Increase" : "Decrease"} ${CHANNELS[channel].name}`).click();
   }
 }
+
+// Reading the board and then playing it out is how nearly every spec reaches the state it wants
+// to assert on, so the three shapes that takes live here. Each returns the colors it read, since
+// a caller that wants to compare against where the board started needs them from before the
+// moves rather than after.
+export async function playToWin(page: Page) {
+  const colors = await readColors(page);
+
+  await play(page, solution(colors.current, colors.target));
+
+  return colors;
+}
+
+export async function playToLoss(page: Page) {
+  const colors = await readColors(page);
+
+  await play(page, misplay(colors.current, colors.target));
+
+  return colors;
+}
+
+// Stops short, for a board that has to still be in play. Any count below MAX_MOVES walks the
+// solution, which is also misplay's opening — the two only part company on the last move.
+export async function playSomeMoves(page: Page, count: number) {
+  const colors = await readColors(page);
+
+  await play(page, solution(colors.current, colors.target).slice(0, count));
+
+  return colors;
+}

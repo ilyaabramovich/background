@@ -175,6 +175,21 @@ describe("randomColor", () => {
   });
 });
 
+// A target is only reachable if every channel lands inside 0-255 without clamping — a clamped
+// channel is one no sequence of moves can walk to. Collected rather than asserted per channel,
+// so a failure names the color and the channel that broke instead of just the value.
+function expectReachable(initialColor: number, offsets: number[]) {
+  const channels = colorToIntArray(initialColor);
+
+  const unreachable = offsets.flatMap((offset, channel) => {
+    const exact = channels[channel] + offset;
+
+    return exact < 0 || exact > 255 ? [{ initialColor, channel, exact }] : [];
+  });
+
+  expect(unreachable).toEqual([]);
+}
+
 describe("generateOffsets", () => {
   it("produces three integer offsets whose magnitudes sum to every move", () => {
     for (let moveCount = 0; moveCount <= 12; moveCount++) {
@@ -200,14 +215,8 @@ describe("generateOffsets", () => {
     for (let moveCount = 0; moveCount <= 3 * Math.floor(128 / step); moveCount++) {
       for (let draw = 0; draw < 100; draw++) {
         const initialColor = randomColor();
-        const channels = colorToIntArray(initialColor);
 
-        generateOffsets(moveCount, initialColor, step).forEach((offset, channel) => {
-          const exact = channels[channel] + offset;
-
-          expect(exact).toBeGreaterThanOrEqual(0);
-          expect(exact).toBeLessThanOrEqual(255);
-        });
+        expectReachable(initialColor, generateOffsets(moveCount, initialColor, step));
       }
     }
   });
@@ -215,24 +224,14 @@ describe("generateOffsets", () => {
   // Reads the real board rather than a hand-picked step, so the shipped game can never
   // drift outside what the reachability guarantee above was proven against.
   it("never places the target past a channel edge at the shipped config", () => {
-    const unreachable: { initialColor: number; channel: number; exact: number }[] = [];
-
     for (let draw = 0; draw < 20000; draw++) {
       const initialColor = randomColor();
-      const channels = colorToIntArray(initialColor);
 
-      generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier).forEach(
-        (offset, channel) => {
-          const exact = channels[channel] + offset;
-
-          if (exact < 0 || exact > 255) {
-            unreachable.push({ initialColor, channel, exact });
-          }
-        },
+      expectReachable(
+        initialColor,
+        generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier),
       );
     }
-
-    expect(unreachable).toEqual([]);
   });
 
   // The three-way split can hand every move to one channel. At the shipped multiplier that
@@ -265,12 +264,7 @@ describe("generateOffsets", () => {
         expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(
           MAX_MOVES * GAME_CONFIG.offsetMultiplier,
         );
-        offsets.forEach((offset, channel) => {
-          const exact = channels[channel] + offset;
-
-          expect(exact).toBeGreaterThanOrEqual(0);
-          expect(exact).toBeLessThanOrEqual(255);
-        });
+        expectReachable(initialColor, offsets);
       }
     });
   });
@@ -279,15 +273,10 @@ describe("generateOffsets", () => {
   it("places a reachable target when every channel starts mid-range", () => {
     for (let draw = 0; draw < 2000; draw++) {
       const initialColor = 0x808080;
-      const channels = colorToIntArray(initialColor);
 
-      generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier).forEach(
-        (offset, channel) => {
-          const exact = channels[channel] + offset;
-
-          expect(exact).toBeGreaterThanOrEqual(0);
-          expect(exact).toBeLessThanOrEqual(255);
-        },
+      expectReachable(
+        initialColor,
+        generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier),
       );
     }
   });

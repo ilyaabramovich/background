@@ -14,6 +14,24 @@ import {
 // own randomColor, which lives with board generation now and is not what any of this is testing.
 const randomColor = () => Math.floor(Math.random() * 0x1000000);
 
+// WCAG relative luminance and contrast ratio, recomputed here rather than reusing the
+// implementation, so a mistake in color.ts cannot agree with itself. One copy: a second would
+// be a second place for the reference to be wrong.
+const luminance = (colorInt: number) =>
+  colorToIntArray(colorInt)
+    .map((value) => {
+      const c = value / 255;
+
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    })
+    .reduce((sum, c, i) => sum + [0.2126, 0.7152, 0.0722][i] * c, 0);
+
+const ratio = (a: number, b: number) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+
+  return (hi + 0.05) / (lo + 0.05);
+};
+
 describe("offsetColor", () => {
   it("applies each offset to its own channel", () => {
     expect(offsetColor(0x646464, [10, -10, 0])).toBe(0x6e5a64);
@@ -93,22 +111,6 @@ describe("contrastingColor", () => {
   });
 
   it("always picks whichever of black or white contrasts more", () => {
-    // WCAG contrast ratio, recomputed here rather than reusing the implementation.
-    const luminance = (colorInt: number) =>
-      colorToIntArray(colorInt)
-        .map((value) => {
-          const c = value / 255;
-
-          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-        })
-        .reduce((sum, c, i) => sum + [0.2126, 0.7152, 0.0722][i] * c, 0);
-
-    const ratio = (a: number, b: number) => {
-      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-
-      return (hi + 0.05) / (lo + 0.05);
-    };
-
     for (let i = 0; i < 500; i++) {
       const color = randomColor();
       const chosen = contrastingColor(color);
@@ -123,19 +125,30 @@ describe("contrastingColor", () => {
 
     for (let i = 0; i < 500; i++) {
       const color = randomColor();
-      const l = colorToIntArray(color)
-        .map((value) => {
-          const c = value / 255;
-
-          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-        })
-        .reduce((sum, c, i) => sum + [0.2126, 0.7152, 0.0722][i] * c, 0);
+      const l = luminance(color);
       const contrast = contrastingColor(color) === 0xffffff ? 1.05 / (l + 0.05) : (l + 0.05) / 0.05;
 
       worst = Math.min(worst, contrast);
     }
 
     expect(worst).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // The two tests above sample at random and are sensitive enough to catch the pivot being off
+  // by 0.001. What they cannot do is say where the boundary sits, or fail the same way twice —
+  // randomColor is unseeded, so a regression surfaces as some unnamed color. Walking the greys
+  // names the exact shade that moved. It is the coarsest of the three, since one grey step is
+  // about 0.003 of luminance, and is here for the reproducibility rather than the reach.
+  it("flips from white to black exactly at the contrast threshold", () => {
+    // Where 1.05/(L+0.05) and (L+0.05)/0.05 meet.
+    const pivot = Math.sqrt(1.05 * 0.05) - 0.05;
+    const greys = Array.from({ length: 256 }, (_, v) => (v << 16) | (v << 8) | v);
+
+    const flip = greys.findIndex((color) => contrastingColor(color) === 0x000000);
+
+    expect(flip).toBe(greys.findIndex((color) => luminance(color) > pivot));
+    expect(contrastingColor(greys[flip - 1])).toBe(0xffffff);
+    expect(contrastingColor(greys[flip])).toBe(0x000000);
   });
 });
 

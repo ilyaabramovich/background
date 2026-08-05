@@ -1,7 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { button, heading, misplay, moveCounter, play, readColors, status } from "./game-page.js";
+import { MAX_MOVES } from "../src/config.js";
+import { button, heading, moveCounter, playSomeMoves, playToLoss, status } from "./game-page.js";
 
 // WCAG 2.1 AA, which is what a game that says everything through color has to hold itself to.
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
@@ -25,17 +26,13 @@ test("the daily board has no accessibility violations", async ({ page }) => {
 });
 
 test("a board in play has no accessibility violations", async ({ page }) => {
-  const { current, target } = await readColors(page);
-
-  await play(page, misplay(current, target).slice(0, 3));
+  await playSomeMoves(page, 3);
 
   await expectNoViolations(page);
 });
 
 test("a finished board has no accessibility violations", async ({ page }) => {
-  const { current, target } = await readColors(page);
-
-  await play(page, misplay(current, target));
+  await playToLoss(page);
   await expect(status(page)).toBeVisible();
 
   await expectNoViolations(page);
@@ -75,11 +72,11 @@ test("the board reports its colors and remaining moves to a screen reader", asyn
   const live = page.locator("p[aria-live=polite]");
 
   await expect(live).toHaveText(/Current color red \d+, green \d+, blue \d+\./);
-  await expect(live).toHaveText(/7 moves left\.$/);
+  await expect(live).toHaveText(new RegExp(`${MAX_MOVES} moves left\\.$`));
 
   await button(page, "Increase red").click();
 
-  await expect(live).toHaveText(/6 moves left\.$/);
+  await expect(live).toHaveText(new RegExp(`${MAX_MOVES - 1} moves left\\.$`));
 });
 
 // Tabbing has to walk the actions and then the pad in reading order, with the two buttons that
@@ -102,5 +99,5 @@ test("the controls are reached and fired from the keyboard", async ({ page }) =>
   expect(focused).toEqual(["New game", "Increase red", "Increase green", "Increase blue"]);
 
   await page.keyboard.press("Enter");
-  await expect(moveCounter(page)).toHaveText("Moves: 1/7");
+  await expect(moveCounter(page)).toHaveText(`Moves: 1/${MAX_MOVES}`);
 });

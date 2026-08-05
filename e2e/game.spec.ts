@@ -4,11 +4,11 @@ import { GAME_STATUS } from "../src/status.js";
 import {
   button,
   heading,
-  misplay,
   moveCounter,
-  play,
+  playSomeMoves,
+  playToLoss,
+  playToWin,
   readColors,
-  solution,
   status,
 } from "./game-page.js";
 
@@ -17,9 +17,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("wins the board when every move closes the gap to the target", async ({ page }) => {
-  const { current, target } = await readColors(page);
-
-  await play(page, solution(current, target));
+  await playToWin(page);
 
   await expect(status(page)).toHaveText(GAME_STATUS.won);
   await expect(moveCounter(page)).toHaveText(`Moves: ${MAX_MOVES}/${MAX_MOVES}`);
@@ -28,9 +26,7 @@ test("wins the board when every move closes the gap to the target", async ({ pag
 });
 
 test("loses the board when the last move is spent elsewhere", async ({ page }) => {
-  const { current, target } = await readColors(page);
-
-  await play(page, misplay(current, target));
+  await playToLoss(page);
 
   await expect(status(page)).toHaveText(GAME_STATUS.lost);
   const finished = await readColors(page);
@@ -38,9 +34,7 @@ test("loses the board when the last move is spent elsewhere", async ({ page }) =
 });
 
 test("the controls stop taking moves once the game is over", async ({ page }) => {
-  const { current, target } = await readColors(page);
-
-  await play(page, misplay(current, target));
+  await playToLoss(page);
 
   await expect(status(page)).toBeVisible();
   // The pad is dimmed and inert rather than unmounted, so the tiles are still on the page and
@@ -58,14 +52,14 @@ test("go back takes one move off and reset takes them all", async ({ page }) => 
   await expect(goBack).toBeDisabled();
   await expect(reset).toBeDisabled();
 
-  await play(page, solution(start.current, start.target).slice(0, 3));
-  await expect(moveCounter(page)).toHaveText("Moves: 3/7");
+  await playSomeMoves(page, 3);
+  await expect(moveCounter(page)).toHaveText(`Moves: 3/${MAX_MOVES}`);
 
   await goBack.click();
-  await expect(moveCounter(page)).toHaveText("Moves: 2/7");
+  await expect(moveCounter(page)).toHaveText(`Moves: 2/${MAX_MOVES}`);
 
   await reset.click();
-  await expect(moveCounter(page)).toHaveText("Moves: 0/7");
+  await expect(moveCounter(page)).toHaveText(`Moves: 0/${MAX_MOVES}`);
   await expect(goBack).toBeDisabled();
   expect(await readColors(page)).toEqual(start);
 });
