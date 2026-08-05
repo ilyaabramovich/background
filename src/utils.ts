@@ -9,9 +9,19 @@ export type Color = number;
 // which is the one mistake in here that produces a plausible wrong color rather than a crash.
 export type Channel = 0 | 1 | 2;
 
-// Every channel, in packed order. Worth keeping as a value because the index .map hands a
-// callback is a plain number: iterating this is how a caller gets a Channel without asserting.
-export const CHANNEL_ORDER: readonly Channel[] = [0, 1, 2];
+// The channels in packed order, each paired with what it is called. One list, because the name
+// is read out three ways — the control pad's labels, the description below, and the specs that
+// drive the game by those labels — and a channel renamed in only some of them is a game whose
+// buttons and screen reader disagree.
+//
+// Pairing the two rather than keeping a names array beside CHANNEL_ORDER is what makes iterating
+// this yield a Channel: the index .map hands a callback is a plain number, so a separate array
+// would need an assertion to narrow, and nothing but a comment would tie the two together.
+export const CHANNELS = [
+  { channel: 0, name: "red" },
+  { channel: 1, name: "green" },
+  { channel: 2, name: "blue" },
+] as const satisfies readonly { channel: Channel; name: string }[];
 
 const MAX_RGB_COLORS = 16777216;
 const MAX_CHANNEL = 0xff;
@@ -78,9 +88,9 @@ export function formatColor(colorInt: Color): string {
 // The board says everything through color alone, so the only way to follow a game without
 // seeing it is to have the channels spelled out.
 export function describeColor(colorInt: Color): string {
-  const [red, green, blue] = colorToIntArray(colorInt);
+  const channels = colorToIntArray(colorInt);
 
-  return `red ${red}, green ${green}, blue ${blue}`;
+  return CHANNELS.map(({ channel, name }) => `${name} ${channels[channel]}`).join(", ");
 }
 
 export function randomColor(randomInt: RandomInt = defaultRandomInt): Color {

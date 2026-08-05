@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { GAME_CONFIG, MAX_MOVES } from "./config";
 import {
-  CHANNEL_ORDER,
+  CHANNELS,
   colorToIntArray,
   contrastingColor,
   describeColor,
@@ -72,7 +72,7 @@ describe("offsetChannel", () => {
   it("agrees with offsetColor for every channel", () => {
     const color = 0x123456;
 
-    for (const channel of CHANNEL_ORDER) {
+    for (const { channel } of CHANNELS) {
       for (const amount of [-40, -10, 0, 10, 40]) {
         const offsets = [0, 0, 0];
         offsets[channel] = amount;
@@ -370,7 +370,7 @@ describe("generateOffsets", () => {
       let color = initialColor;
       let played = 0;
 
-      CHANNEL_ORDER.forEach((channel) => {
+      CHANNELS.forEach(({ channel }) => {
         const offset = offsets[channel];
 
         for (let i = 0; i < Math.abs(offset) / step; i++) {

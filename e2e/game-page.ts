@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { GAME_CONFIG, GAME_STATUS, MAX_MOVES } from "../src/config.js";
-import { CHANNEL_ORDER, colorToIntArray, offsetChannel } from "../src/utils.js";
+import { CHANNELS, colorToIntArray, offsetChannel } from "../src/utils.js";
 import type { Channel, Color } from "../src/utils.js";
 
 // One click: a channel to move and which way. delta stays a plain number because solution
@@ -10,7 +10,6 @@ export type Move = {
   delta: number;
 };
 
-const CHANNELS = ["red", "green", "blue"];
 const STEP = GAME_CONFIG.offsetMultiplier;
 const COLORS =
   /Current color red (\d+), green (\d+), blue (\d+)\. Target color red (\d+), green (\d+), blue (\d+)\./;
@@ -70,7 +69,7 @@ export function solution(current: Color, target: Color): Move[] {
     throw new Error(`Target is not a whole number of ${STEP}-sized steps away: ${distances}`);
   }
 
-  const moves = CHANNEL_ORDER.flatMap((channel) => {
+  const moves = CHANNELS.flatMap(({ channel }) => {
     const steps = distances[channel];
 
     return Array.from({ length: Math.abs(steps) }, () => ({ channel, delta: Math.sign(steps) }));
@@ -89,7 +88,7 @@ export function solution(current: Color, target: Color): Move[] {
 export function misplay(current: Color, target: Color): Move[] {
   const moves = solution(current, target);
 
-  for (const channel of CHANNEL_ORDER) {
+  for (const { channel } of CHANNELS) {
     for (const delta of [1, -1]) {
       const candidate = [...moves.slice(0, -1), { channel, delta }];
 
@@ -104,6 +103,6 @@ export function misplay(current: Color, target: Color): Move[] {
 
 export async function play(page: Page, moves: Move[]) {
   for (const { channel, delta } of moves) {
-    await button(page, `${delta > 0 ? "Increase" : "Decrease"} ${CHANNELS[channel]}`).click();
+    await button(page, `${delta > 0 ? "Increase" : "Decrease"} ${CHANNELS[channel].name}`).click();
   }
 }
