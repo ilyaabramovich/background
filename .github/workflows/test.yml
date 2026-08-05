@@ -1,9 +1,15 @@
 name: Test
 
-on: push
+on: [push, pull_request]
 
 permissions:
   contents: read
+
+# A branch only needs an answer about its newest commit, so pushing over a run in flight
+# cancels it rather than queueing a second one behind it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -13,14 +19,12 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: npm
       - run: npm ci
-      - run: npm run fmt:check
-      - run: npm run lint
-      # vite build strips types without checking them, so this is the only thing standing
-      # between a type error and production.
-      - run: npm run typecheck
-      - run: npm test
+      # fmt:check, lint, typecheck and test, kept in package.json so the pre-commit hook runs
+      # the same list. vite build strips types without checking them, so the typecheck inside
+      # this is the only thing standing between a type error and production.
+      - run: npm run check
       - run: npm run build
 
   e2e:
@@ -30,11 +34,23 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: npm
       - run: npm ci
+      # Keyed on the playwright version, since that is what decides which browser build the
+      # install step would otherwise fetch again on every run.
+      - name: Cache browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       # Only the browser the config actually runs, and --with-deps for the system libraries
-      # a bare runner is missing.
+      # a bare runner is missing. The system libraries live outside the cached path, so this
+      # runs either way and only the download is skipped on a hit.
       - run: npx playwright install --with-deps chromium
+      # Under CI the specs run against the built bundle rather than the dev server, so what
+      # gets played and scanned is what a player would actually load. See playwright.config.ts.
+      - run: npm run build
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}

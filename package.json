@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
+    "check": "npm run fmt:check && npm run lint && npm run typecheck && npm test",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
