@@ -1,9 +1,17 @@
 import ControlTile from "./ControlTile";
 import { offsetChannel } from "../utils";
+import type { Color } from "../utils";
 
 const CHANNELS = ["red", "green", "blue"];
 
-export default function ControlPad({ color, step, isOver, onMove }) {
+type ControlPadProps = {
+  color: Color;
+  step: number;
+  isOver: boolean;
+  onMove: (color: Color) => void;
+};
+
+export default function ControlPad({ color, step, isOver, onMove }: ControlPadProps) {
   return (
     // Dimmed rather than hidden once the game is over: the result is drawn on the board now,
     // so nothing needs this space, and keeping the tiles in place means no layout shift when

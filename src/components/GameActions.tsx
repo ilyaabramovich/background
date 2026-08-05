@@ -1,7 +1,24 @@
 import ActionButton from "./ActionButton";
 import { MAX_MOVES } from "../config";
 
-export default function GameActions({ moveCount, date, onGoBack, onRestart, onNewGame, onDaily }) {
+type GameActionsProps = {
+  moveCount: number;
+  // null is a free-play board, which is the only time the way back to the daily is offered.
+  date: Date | null;
+  onGoBack: () => void;
+  onRestart: () => void;
+  onNewGame: () => void;
+  onDaily: () => void;
+};
+
+export default function GameActions({
+  moveCount,
+  date,
+  onGoBack,
+  onRestart,
+  onNewGame,
+  onDaily,
+}: GameActionsProps) {
   return (
     <div className="flex h-(--actions-h) items-center justify-between gap-2">
       {/* Labels are clipped to one word each: the row has to hold the counter and, in free

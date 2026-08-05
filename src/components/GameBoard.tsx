@@ -1,16 +1,27 @@
 import { useEffect, useRef } from "react";
 import { contrastingColor, formatColor, mixColors } from "../utils";
+import type { Color } from "../utils";
+import type { BoardLayout } from "../config";
 import Tile from "./Tile";
 
-export default function GameBoard({ layout, from, to, status, children }) {
-  const resultRef = useRef(null);
+type GameBoardProps = {
+  layout: BoardLayout;
+  from: Color;
+  to: Color;
+  // null while the game is still going, which is what the effect below watches for.
+  status: string | null;
+  children: React.ReactNode;
+};
+
+export default function GameBoard({ layout, from, to, status, children }: GameBoardProps) {
+  const resultRef = useRef<HTMLParagraphElement>(null);
 
   // The controls unmount the moment the game ends, which would otherwise drop focus onto
   // the body. Moving it to the result both keeps focus somewhere sensible and gets the
   // outcome read out, without an aria-live region repeating what the board already says.
   useEffect(() => {
     if (status) {
-      resultRef.current.focus();
+      resultRef.current?.focus();
     }
   }, [status]);
 

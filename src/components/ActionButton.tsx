@@ -1,4 +1,4 @@
-export default function ActionButton(props) {
+export default function ActionButton(props: React.ComponentProps<"button">) {
   return (
     <button
       type="button"

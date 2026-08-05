@@ -5,19 +5,40 @@ import Tile from "./Tile";
 import GameBoard from "./GameBoard";
 import GameActions from "./GameActions";
 import { describeColor } from "../utils";
+import type { Color } from "../utils";
 import { formatPuzzleDate } from "../puzzle";
 import { MAX_MOVES } from "../config";
+import type { GameConfig } from "../config";
 
-export default function Game({ initialColor, targetColor, date, onNewGame, onDaily, config }) {
+type GameProps = {
+  initialColor: Color;
+  targetColor: Color;
+  // null is a free-play board off a random seed, rather than the one belonging to a day.
+  date: Date | null;
+  onNewGame: () => void;
+  onDaily: () => void;
+  config: GameConfig;
+};
+
+export default function Game({
+  initialColor,
+  targetColor,
+  date,
+  onNewGame,
+  onDaily,
+  config,
+}: GameProps) {
   const { board, offsetMultiplier } = config;
-  const [moves, setMoves] = useState([]);
+  // Each move is the color it produced, not the step that got there, so the last entry is the
+  // board's current color and dropping it is Go back.
+  const [moves, setMoves] = useState<Color[]>([]);
 
   const currentColor = moves.at(-1) ?? initialColor;
   const isOver = moves.length >= MAX_MOVES;
   const hasWon = isOver && currentColor === targetColor;
   const status = isOver ? (hasWon ? "You won yay!" : "Not this time") : null;
 
-  function handleMove(nextColor) {
+  function handleMove(nextColor: Color) {
     setMoves((moves) => (isOver ? moves : [...moves, nextColor]));
   }
 

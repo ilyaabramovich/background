@@ -1,6 +1,16 @@
 import { contrastingColor, formatColor } from "../utils";
+import type { Color } from "../utils";
 
-export default function ControlTile({ color, label, onClick, children }) {
+type ControlTileProps = {
+  // The color this tile would produce, which is both what it paints itself and what it hands
+  // back when clicked.
+  color: Color;
+  label: string;
+  onClick: (color: Color) => void;
+  children: React.ReactNode;
+};
+
+export default function ControlTile({ color, label, onClick, children }: ControlTileProps) {
   return (
     <button
       type="button"
