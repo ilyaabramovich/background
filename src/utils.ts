@@ -8,7 +8,7 @@ const MAX_RGB_COLORS = 16777216;
 const MAX_CHANNEL = 0xff;
 
 // Every draw goes through an injected randomInt(max) so a board can be rebuilt from a seed; see
-// createRandomInt in random.js. Unseeded play falls back to this, and max is inclusive.
+// createRandomInt in random.ts. Unseeded play falls back to this, and max is inclusive.
 const defaultRandomInt: RandomInt = (max) => Math.floor(Math.random() * (max + 1));
 
 // Black and white text land on equal contrast ratios where 1.05/(L+0.05) meets
@@ -135,7 +135,7 @@ function fitToHeadroom(magnitudes: number[], channels: number[], step: number) {
 }
 
 // The order and count of draws below is what a seed reproduces, so changing it renumbers every
-// past daily board. src/puzzle.test.js pins the first thirty days against exactly that.
+// past daily board. src/puzzle.test.ts pins the first thirty days against exactly that.
 export function generateOffsets(
   moveCount: number,
   initialColor: Color,

@@ -75,7 +75,7 @@ describe("createPuzzle", () => {
     expect(boards.size).toBeGreaterThan(45);
   });
 
-  // The reachability guarantee from utils.test.js has to survive the seeded path too, or a given
+  // The reachability guarantee from utils.test.ts has to survive the seeded path too, or a given
   // day would be unwinnable for everyone at once rather than for one unlucky player.
   it("never hands a day a target it cannot reach", () => {
     const unreachable = [];

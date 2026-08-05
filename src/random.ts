@@ -1,13 +1,13 @@
 import { xoroshiro128plus } from "pure-rand/generator/xoroshiro128plus";
 import { uniformInt } from "pure-rand/distribution/uniformInt";
 
+// The draw function every seeded path passes around: max is inclusive.
+export type RandomInt = (max: number) => number;
+
 // Daily seeds are day numbers, so today and tomorrow differ by exactly one, and a generator
 // started from two seeds that close can agree on its first few draws. This is the splitmix32
 // finalizer, which scatters neighbouring integers across the whole 32-bit range before a single
 // value is drawn.
-// The draw function every seeded path passes around: max is inclusive.
-export type RandomInt = (max: number) => number;
-
 function scramble(value: number) {
   let hash = value | 0;
 

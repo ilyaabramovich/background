@@ -12,7 +12,7 @@ const DATE_LABEL = new Map<string | undefined, Intl.DateTimeFormat>();
 const MS_PER_DAY = 86400000;
 
 // One board, built from one generator. Everything a seed decides happens in here, which is what
-// lets the golden test in puzzle.test.js exercise the same path the app takes.
+// lets the golden test in puzzle.test.ts exercise the same path the app takes.
 export function createPuzzle(seed?: number): Puzzle {
   const randomInt = createRandomInt(seed);
   const initialColor = randomColor(randomInt);
