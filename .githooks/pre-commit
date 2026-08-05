@@ -7,6 +7,9 @@ npm run fmt:check
 echo "🔍 Running linter..."
 npm run lint
 
+echo "🔍 Running typechecker..."
+npm run typecheck
+
 echo "🧪 Running tests..."
 npm test
 

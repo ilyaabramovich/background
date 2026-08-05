@@ -81,6 +81,7 @@ test("new game leaves the daily, and daily brings the same board back", async ({
 
   // The daily board is seeded off the date, so coming back to it has to deal the same colors.
   await button(page, "Daily").click();
-  await expect(heading(page)).toHaveText(daily);
+  // Non-null because the toMatch above has already failed the test if the heading had no text.
+  await expect(heading(page)).toHaveText(daily!);
   expect(await readColors(page)).toEqual(dailyColors);
 });

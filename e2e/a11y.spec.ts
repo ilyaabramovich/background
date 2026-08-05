@@ -1,15 +1,16 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { button, heading, misplay, moveCounter, play, readColors, status } from "./game-page.js";
 
 // WCAG 2.1 AA, which is what a game that says everything through color has to hold itself to.
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
-function scan(page) {
+function scan(page: Page) {
   return new AxeBuilder({ page }).withTags(TAGS).analyze();
 }
 
-async function expectNoViolations(page) {
+async function expectNoViolations(page: Page) {
   const { violations } = await scan(page);
 
   expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(", ")}`)).toEqual([]);
@@ -84,14 +85,16 @@ test("the board reports its colors and remaining moves to a screen reader", asyn
 // Tabbing has to walk the actions and then the pad in reading order, with the two buttons that
 // do nothing on a fresh board skipped rather than sitting in the way.
 test("the controls are reached and fired from the keyboard", async ({ page }) => {
-  const focused = [];
+  const focused: (string | null)[] = [];
 
   for (let i = 0; i < 4; i++) {
     await page.keyboard.press("Tab");
     focused.push(
       await page.evaluate(
         () =>
-          document.activeElement.getAttribute("aria-label") ?? document.activeElement.textContent,
+          document.activeElement?.getAttribute("aria-label") ??
+          document.activeElement?.textContent ??
+          null,
       ),
     );
   }

@@ -17,6 +17,9 @@ jobs:
       - run: npm ci
       - run: npm run fmt:check
       - run: npm run lint
+      # vite build strips types without checking them, so this is the only thing standing
+      # between a type error and production.
+      - run: npm run typecheck
       - run: npm test
       - run: npm run build
 
