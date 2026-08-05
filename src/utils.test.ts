@@ -92,7 +92,7 @@ describe("contrastingColor", () => {
 
   it("always picks whichever of black or white contrasts more", () => {
     // WCAG contrast ratio, recomputed here rather than reusing the implementation.
-    const luminance = (colorInt) =>
+    const luminance = (colorInt: number) =>
       colorToIntArray(colorInt)
         .map((value) => {
           const c = value / 255;
@@ -101,7 +101,7 @@ describe("contrastingColor", () => {
         })
         .reduce((sum, c, i) => sum + [0.2126, 0.7152, 0.0722][i] * c, 0);
 
-    const ratio = (a, b) => {
+    const ratio = (a: number, b: number) => {
       const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
 
       return (hi + 0.05) / (lo + 0.05);
@@ -280,7 +280,7 @@ describe("generateOffsets", () => {
   // Reads the real board rather than a hand-picked step, so the shipped game can never
   // drift outside what the reachability guarantee above was proven against.
   it("never places the target past a channel edge at the shipped config", () => {
-    const unreachable = [];
+    const unreachable: { initialColor: number; channel: number; exact: number }[] = [];
 
     for (let draw = 0; draw < 20000; draw++) {
       const initialColor = randomColor();

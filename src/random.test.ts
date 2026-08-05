@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { createRandomInt } from "./random";
+import type { RandomInt } from "./random";
 
-const draw = (randomInt, count, max) => Array.from({ length: count }, () => randomInt(max));
+const draw = (randomInt: RandomInt, count: number, max: number) =>
+  Array.from({ length: count }, () => randomInt(max));
 
 describe("createRandomInt", () => {
   it("replays the same sequence for the same seed", () => {

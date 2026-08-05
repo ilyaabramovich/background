@@ -1,13 +1,19 @@
 import { GAME_CONFIG, MAX_MOVES } from "./config";
 import { createRandomInt } from "./random";
 import { generateOffsets, offsetColor, randomColor } from "./utils";
+import type { Color } from "./utils";
 
-const DATE_LABEL = new Map();
+export type Puzzle = {
+  initialColor: Color;
+  targetColor: Color;
+};
+
+const DATE_LABEL = new Map<string | undefined, Intl.DateTimeFormat>();
 const MS_PER_DAY = 86400000;
 
 // One board, built from one generator. Everything a seed decides happens in here, which is what
 // lets the golden test in puzzle.test.js exercise the same path the app takes.
-export function createPuzzle(seed) {
+export function createPuzzle(seed?: number): Puzzle {
   const randomInt = createRandomInt(seed);
   const initialColor = randomColor(randomInt);
   const offsets = generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier, randomInt);
@@ -23,7 +29,7 @@ export function createPuzzle(seed) {
 // range that no date can produce. The local year, month and day are read off the date and fed to
 // Date.UTC, which lands on an exact multiple of a day whatever the player's zone is doing, so the
 // division is never fractional and the board still turns over at their own midnight.
-export function dailySeed(date = new Date()) {
+export function dailySeed(date = new Date()): number {
   return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY;
 }
 
@@ -31,10 +37,13 @@ export function dailySeed(date = new Date()) {
 // player see the date the way their own system writes it. The year is left off: it costs the
 // actions row enough width to wrap the buttons, and a board you are playing today does not need
 // one to be clear.
-export function formatPuzzleDate(date, locale) {
-  if (!DATE_LABEL.has(locale)) {
-    DATE_LABEL.set(locale, new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }));
+export function formatPuzzleDate(date: Date, locale?: string): string {
+  let formatter = DATE_LABEL.get(locale);
+
+  if (formatter === undefined) {
+    formatter = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
+    DATE_LABEL.set(locale, formatter);
   }
 
-  return DATE_LABEL.get(locale).format(date);
+  return formatter.format(date);
 }
