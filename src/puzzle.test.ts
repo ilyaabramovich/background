@@ -317,4 +317,21 @@ describe("generateOffsets", () => {
       expect(played).toBe(moveCount);
     }
   });
+
+  // Everything above stops at what the three channels can hold. Past that, pickDirection's
+  // last return and fitToHeadroom's break are the only code that runs, and they are what
+  // decides the shape of a board nothing can solve. The board is unreachable by construction
+  // here — 2000 units of travel against roughly 384 of headroom — so the point is not that the
+  // magnitudes still add up, which they cannot, but that the split terminates and still hands
+  // back three whole offsets rather than looping or going fractional.
+  it("still terminates when the board asks for more than the channels can hold", () => {
+    for (const initialColor of [0x000000, 0x808080, 0xffffff, 0x0080ff]) {
+      const offsets = generateOffsets(100, initialColor, 20);
+
+      expect(offsets).toHaveLength(3);
+      for (const offset of offsets) {
+        expect(Number.isInteger(offset)).toBe(true);
+      }
+    }
+  });
 });

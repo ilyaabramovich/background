@@ -40,7 +40,7 @@ export default function Game({
   const status = isOver ? (hasWon ? GAME_STATUS.won : GAME_STATUS.lost) : null;
 
   function handleMove(nextColor: Color) {
-    setMoves((moves) => (isOver ? moves : [...moves, nextColor]));
+    setMoves((moves) => (moves.length >= MAX_MOVES ? moves : [...moves, nextColor]));
   }
 
   function goBack() {
