@@ -58,7 +58,7 @@ export default function Game({
           <Tile key={idx} color={moves[idx] ?? null} />
         ))}
       </GameBoard>
-      <p className="sr-only" aria-live="polite">
+      <p className="sr-only" aria-live="polite" data-testid="announcer">
         {`Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
       </p>
       {import.meta.env.DEV && <DebugOverlay colors={[currentColor, targetColor]} />}

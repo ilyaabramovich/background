@@ -44,7 +44,12 @@ export default function GameBoard({ layout, from, to, status, children }: GameBo
             color: formatColor(contrastingColor(mixColors(from, to))),
           }}
         >
-          <p ref={resultRef} tabIndex={-1} className="text-2xl font-bold focus:outline-none">
+          <p
+            ref={resultRef}
+            tabIndex={-1}
+            data-testid="game-status"
+            className="text-2xl font-bold focus:outline-none"
+          >
             {status}
           </p>
         </div>

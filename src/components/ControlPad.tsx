@@ -15,6 +15,7 @@ export default function ControlPad({ color, step, isOver, onMove }: ControlPadPr
       className="grid gap-(--gap) grid-cols-[repeat(var(--control-columns),1fr)] [[inert]]:opacity-40"
       style={{ "--control-columns": CHANNELS.length }}
       inert={isOver}
+      data-testid="control-pad"
     >
       {CHANNELS.map(({ name }) => (
         <h2

@@ -1,11 +1,8 @@
 import type { Page } from "@playwright/test";
 import { GAME_CONFIG, MAX_MOVES } from "../src/config.js";
-import { GAME_STATUS } from "../src/status.js";
 import { CHANNELS, colorToIntArray, offsetChannel, packColor } from "../src/color.js";
 import type { Channel, Color } from "../src/color.js";
 
-// One click: a channel to move and which way. delta stays a plain number because solution
-// builds it out of Math.sign, and applyMoves only ever multiplies it by STEP.
 export type Move = {
   channel: Channel;
   delta: number;
@@ -19,14 +16,31 @@ export function heading(page: Page) {
   return page.getByRole("heading", { level: 1 });
 }
 
+// Everything below the heading is found by test id rather than by what it says or which ARIA
+// attribute it carries, so that the specs asserting on that text and those attributes are the
+// only place a change to either can fail. A locator that went looking for the aria-live
+// paragraph could not then turn round and prove the paragraph is live.
 export function status(page: Page) {
-  return page.getByText(GAME_STATUS.won).or(page.getByText(GAME_STATUS.lost));
+  return page.getByTestId("game-status");
 }
 
+// Always mounted, and empty until the game ends — the overlay it sits in is faded rather than
+// unmounted. Assert on its text, never on toBeVisible, which an opacity-0 overlay still passes.
 export function moveCounter(page: Page) {
-  return page.getByText(/^Moves: \d+\/\d+$/);
+  return page.getByTestId("move-counter");
 }
 
+export function announcer(page: Page) {
+  return page.getByTestId("announcer");
+}
+
+export function controlPad(page: Page) {
+  return page.getByTestId("control-pad");
+}
+
+// The buttons stay keyed to their accessible names. Those names are the whole interface for a
+// pad of colored squares reading + and −, so a spec that stopped going through them would stop
+// noticing when one goes missing.
 export function button(page: Page, name: string) {
   return page.getByRole("button", { name });
 }
@@ -35,7 +49,7 @@ export function button(page: Page, name: string) {
 // also the only text the game puts the two colors into — which makes it what a test reads to
 // work out the moves that solve the board in front of it.
 export async function readColors(page: Page) {
-  const line = await page.locator("p[aria-live=polite]").textContent();
+  const line = await announcer(page).textContent();
   // An empty locator and a line that does not parse are the same failure to a reader, so they
   // share the one throw below.
   const match = line === null ? null : COLORS.exec(line);

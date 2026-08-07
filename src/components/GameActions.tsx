@@ -28,7 +28,11 @@ export default function GameActions({
           Reset
         </ActionButton>
       </div>
-      <span aria-hidden="true" className="text-sm font-semibold whitespace-nowrap">
+      <span
+        aria-hidden="true"
+        data-testid="move-counter"
+        className="text-sm font-semibold whitespace-nowrap"
+      >
         <span className="hidden @[20rem]:inline">Moves: </span>
         {moveCount}/{MAX_MOVES}
       </span>

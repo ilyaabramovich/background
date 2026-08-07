@@ -3,6 +3,7 @@ import { MAX_MOVES } from "../src/config.js";
 import { GAME_STATUS } from "../src/status.js";
 import {
   button,
+  controlPad,
   heading,
   moveCounter,
   playSomeMoves,
@@ -36,10 +37,10 @@ test("loses the board when the last move is spent elsewhere", async ({ page }) =
 test("the controls stop taking moves once the game is over", async ({ page }) => {
   await playToLoss(page);
 
-  await expect(status(page)).toBeVisible();
+  await expect(status(page)).toHaveText(GAME_STATUS.lost);
   // The pad is dimmed and inert rather than unmounted, so the tiles are still on the page and
   // still clickable as far as the test is concerned. The move has to go nowhere all the same.
-  await expect(page.locator("div[inert]")).toBeVisible();
+  await expect(controlPad(page)).toHaveAttribute("inert", "");
   await button(page, "Increase red").click({ force: true });
   await expect(moveCounter(page)).toHaveText(`Moves: ${MAX_MOVES}/${MAX_MOVES}`);
 });
