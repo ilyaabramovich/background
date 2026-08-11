@@ -22,8 +22,6 @@ describe("createRandomInt", () => {
     }
   });
 
-  // Days hand over seeds one apart. Without the finalizer in random.ts, generators started from
-  // neighbouring integers can open with the same few values and consecutive puzzles rhyme.
   it("keeps consecutive seeds from opening alike", () => {
     const openings = new Set(
       Array.from({ length: 500 }, (_, seed) => draw(createRandomInt(seed + 1), 4, 255).join(",")),

@@ -38,8 +38,6 @@ test("the controls stop taking moves once the game is over", async ({ page }) =>
   await playToLoss(page);
 
   await expect(status(page)).toHaveText(GAME_STATUS.lost);
-  // The pad is dimmed and inert rather than unmounted, so the tiles are still on the page and
-  // still clickable as far as the test is concerned. The move has to go nowhere all the same.
   await expect(controlPad(page)).toHaveAttribute("inert", "");
   await button(page, "Increase red").click({ force: true });
   await expect(moveCounter(page)).toHaveText(`Moves: ${MAX_MOVES}/${MAX_MOVES}`);
@@ -75,9 +73,7 @@ test("new game leaves the daily, and daily brings the same board back", async ({
   await button(page, "New game").click();
   await expect(heading(page)).toHaveText("Free play");
 
-  // The daily board is seeded off the date, so coming back to it has to deal the same colors.
   await button(page, "Daily").click();
-  // Non-null because the toMatch above has already failed the test if the heading had no text.
   await expect(heading(page)).toHaveText(daily!);
   expect(await readColors(page)).toEqual(dailyColors);
 });

@@ -1,14 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createPuzzle, dailySeed, formatPuzzleDate, generateOffsets, randomColor } from "./puzzle";
-import { GAME_CONFIG, MAX_MOVES } from "./config";
+import { MAX_MOVES, STEP } from "./config";
 import { CHANNELS, colorToIntArray, offsetChannel, offsetColor } from "./color";
 
-// A seed only reproduces a board while the draws behind it stay put: the two cut points in
-// generateOffsets, then however many pickDirection takes. Reordering them, changing GAME_CONFIG,
-// or a pure-rand upgrade that shifts its output would all quietly rebuild every past daily.
-// These are the boards as shipped, keyed by the day number that seeds them. The date each one
-// belongs to rides along in a comment, since a day number does not read as one. A diff means
-// history moved.
 const SHIPPED_BOARDS = [
   [20670, 0x83955f, 0x4795af], // 2026-08-05
   [20671, 0x8f49e3, 0x0349e3], // 2026-08-06
@@ -75,8 +69,6 @@ describe("createPuzzle", () => {
     expect(boards.size).toBeGreaterThan(45);
   });
 
-  // The reachability guarantee generateOffsets is held to below has to survive the seeded path
-  // too, or a day would be unwinnable for everyone at once rather than for one unlucky player.
   it("never hands a day a target it cannot reach", () => {
     const unreachable = [];
 
@@ -87,7 +79,7 @@ describe("createPuzzle", () => {
       const to = colorToIntArray(targetColor);
       const distance = from.reduce((sum, value, i) => sum + Math.abs(to[i] - value), 0);
 
-      if (distance !== MAX_MOVES * GAME_CONFIG.offsetMultiplier) {
+      if (distance !== MAX_MOVES * STEP) {
         unreachable.push({ date, initialColor, targetColor, distance });
       }
     }
@@ -127,11 +119,7 @@ describe("dailySeed", () => {
     expect(seeds.size).toBe(366);
   });
 
-  // Handing Date.UTC the local calendar fields is what keeps this true: the result is an exact
-  // multiple of a day, so the division stays whole. Dividing a local timestamp instead is where a
-  // 23- or 25-hour day would land mid-day and cost or repeat a board.
   it("moves on by one whole day across a daylight-saving change", () => {
-    // Late March and late October bracket the EU and US clock changes.
     for (const [year, month, start] of [
       [2027, 2, 26],
       [2027, 9, 29],
@@ -173,9 +161,6 @@ describe("randomColor", () => {
   });
 });
 
-// A target is only reachable if every channel lands inside 0-255 without clamping — a clamped
-// channel is one no sequence of moves can walk to. Collected rather than asserted per channel,
-// so a failure names the color and the channel that broke instead of just the value.
 function expectReachable(initialColor: number, offsets: number[]) {
   const channels = colorToIntArray(initialColor);
 
@@ -205,8 +190,6 @@ describe("generateOffsets", () => {
     }
   });
 
-  // Every channel keeps at least 128 of headroom on one side or the other, so with three
-  // channels a board can place 3 * floor(128 / step) moves and still land inside 0-255.
   it("never places the target past a channel edge", () => {
     const step = 10;
 
@@ -219,25 +202,15 @@ describe("generateOffsets", () => {
     }
   });
 
-  // Reads the real board rather than a hand-picked step, so the shipped game can never
-  // drift outside what the reachability guarantee above was proven against.
   it("never places the target past a channel edge at the shipped config", () => {
     for (let draw = 0; draw < 20000; draw++) {
       const initialColor = randomColor();
 
-      expectReachable(
-        initialColor,
-        generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier),
-      );
+      expectReachable(initialColor, generateOffsets(MAX_MOVES, initialColor, STEP));
     }
   });
 
-  // The three-way split can hand every move to one channel. At the shipped multiplier that
-  // is 140 of travel, which a channel sitting near the middle cannot absorb in either
-  // direction, so those draws used to produce a target no sequence of moves could reach.
   it("survives every move landing on a single channel", () => {
-    // Cut points of (7,7), (0,7) and (0,0) put the whole move budget on one channel. Later
-    // draws are pickDirection's, and any value does for those.
     const cutPointsPerChannel = [
       [MAX_MOVES, MAX_MOVES],
       [0, MAX_MOVES],
@@ -252,30 +225,19 @@ describe("generateOffsets", () => {
         const channels = [0, 0, 0];
         channels[loadedChannel] = value;
         const initialColor = (channels[0] << 16) | (channels[1] << 8) | channels[2];
-        const offsets = generateOffsets(
-          MAX_MOVES,
-          initialColor,
-          GAME_CONFIG.offsetMultiplier,
-          randomInt,
-        );
+        const offsets = generateOffsets(MAX_MOVES, initialColor, STEP, randomInt);
 
-        expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(
-          MAX_MOVES * GAME_CONFIG.offsetMultiplier,
-        );
+        expect(offsets.reduce((sum, offset) => sum + Math.abs(offset), 0)).toBe(MAX_MOVES * STEP);
         expectReachable(initialColor, offsets);
       }
     });
   });
 
-  // The tightest board there is: no channel has more than 128 of headroom on either side.
   it("places a reachable target when every channel starts mid-range", () => {
     for (let draw = 0; draw < 2000; draw++) {
       const initialColor = 0x808080;
 
-      expectReachable(
-        initialColor,
-        generateOffsets(MAX_MOVES, initialColor, GAME_CONFIG.offsetMultiplier),
-      );
+      expectReachable(initialColor, generateOffsets(MAX_MOVES, initialColor, STEP));
     }
   });
 
@@ -305,12 +267,6 @@ describe("generateOffsets", () => {
     }
   });
 
-  // Everything above stops at what the three channels can hold. Past that, pickDirection's
-  // last return and fitToHeadroom's break are the only code that runs, and they are what
-  // decides the shape of a board nothing can solve. The board is unreachable by construction
-  // here — 2000 units of travel against roughly 384 of headroom — so the point is not that the
-  // magnitudes still add up, which they cannot, but that the split terminates and still hands
-  // back three whole offsets rather than looping or going fractional.
   it("still terminates when the board asks for more than the channels can hold", () => {
     for (const initialColor of [0x000000, 0x808080, 0xffffff, 0x0080ff]) {
       const offsets = generateOffsets(100, initialColor, 20);

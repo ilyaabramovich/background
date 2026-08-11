@@ -10,13 +10,8 @@ import {
   offsetColor,
 } from "./color";
 
-// Just a source of arbitrary colors to push through the algebra. Local rather than the game's
-// own randomColor, which lives with board generation now and is not what any of this is testing.
 const randomColor = () => Math.floor(Math.random() * 0x1000000);
 
-// WCAG relative luminance and contrast ratio, recomputed here rather than reusing the
-// implementation, so a mistake in color.ts cannot agree with itself. One copy: a second would
-// be a second place for the reference to be wrong.
 const luminance = (colorInt: number) =>
   colorToIntArray(colorInt)
     .map((value) => {
@@ -106,8 +101,8 @@ describe("contrastingColor", () => {
   it("returns white on dark colors and black on light ones", () => {
     expect(contrastingColor(0x000000)).toBe(0xffffff);
     expect(contrastingColor(0xffffff)).toBe(0x000000);
-    expect(contrastingColor(0x0000ff)).toBe(0xffffff); // blue reads dark
-    expect(contrastingColor(0x00ff00)).toBe(0x000000); // green reads light
+    expect(contrastingColor(0x0000ff)).toBe(0xffffff);
+    expect(contrastingColor(0x00ff00)).toBe(0x000000);
   });
 
   it("always picks whichever of black or white contrasts more", () => {
@@ -134,13 +129,7 @@ describe("contrastingColor", () => {
     expect(worst).toBeGreaterThanOrEqual(4.5);
   });
 
-  // The two tests above sample at random and are sensitive enough to catch the pivot being off
-  // by 0.001. What they cannot do is say where the boundary sits, or fail the same way twice —
-  // randomColor is unseeded, so a regression surfaces as some unnamed color. Walking the greys
-  // names the exact shade that moved. It is the coarsest of the three, since one grey step is
-  // about 0.003 of luminance, and is here for the reproducibility rather than the reach.
   it("flips from white to black exactly at the contrast threshold", () => {
-    // Where 1.05/(L+0.05) and (L+0.05)/0.05 meet.
     const pivot = Math.sqrt(1.05 * 0.05) - 0.05;
     const greys = Array.from({ length: 256 }, (_, v) => (v << 16) | (v << 8) | v);
 

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { GAME_CONFIG } from "./config";
 import { createPuzzle, dailySeed } from "./puzzle";
 import Game from "./components/Game";
 
@@ -17,18 +16,15 @@ function App() {
   const [game, setGame] = useState(() => createGame(new Date()));
 
   return (
-    <main className="grid h-dvh justify-center p-(--pad)">
-      <div className="@container grid w-(--side) grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-(--gap)">
-        <Game
-          key={game.id}
-          initialColor={game.initialColor}
-          targetColor={game.targetColor}
-          date={game.date}
-          onNewGame={() => setGame(createGame(null))}
-          onDaily={() => setGame(createGame(new Date()))}
-          config={GAME_CONFIG}
-        />
-      </div>
+    <main className="flex min-h-dvh justify-center p-4">
+      <Game
+        key={game.id}
+        initialColor={game.initialColor}
+        targetColor={game.targetColor}
+        date={game.date}
+        onNewGame={() => setGame(createGame(null))}
+        onDaily={() => setGame(createGame(new Date()))}
+      />
     </main>
   );
 }

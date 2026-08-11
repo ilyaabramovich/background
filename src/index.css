@@ -2,30 +2,3 @@
 
 @source "../src";
 @source not "../src/**/*.test.ts";
-
-@layer base {
-  :root {
-    font-family: system-ui, sans-serif;
-    line-height: 1.5;
-    color: #1a1a1a;
-    background: #fafafa;
-
-    --gap: 1rem;
-    --pad: 1rem;
-    --max-w: 30rem;
-    --actions-h: 2.625rem;
-
-    /* The board and the control pad are both driven off one width. Widest it may go is the
-       viewport (capped at --max-w) minus the page padding; tallest is the share of the
-       viewport left once the actions row and the gaps are paid for, so the board never
-       pushes the controls off screen. The 9rem floor keeps three tappable columns on the
-       narrowest phones even when that means scrolling. */
-    --side: max(
-      calc(9rem + 2 * var(--gap)),
-      min(
-        calc(min(100vw, var(--max-w)) - 2 * var(--pad)),
-        calc(60dvh - 1.2 * var(--pad) - var(--gap) - 0.6 * var(--actions-h))
-      )
-    );
-  }
-}

@@ -6,10 +6,9 @@ import GameBoard from "./GameBoard";
 import GameActions from "./GameActions";
 import { describeColor } from "../color";
 import type { Color } from "../color";
-import { formatPuzzleDate } from "../puzzle";
 import { MAX_MOVES } from "../config";
-import type { GameConfig } from "../config";
 import { GAME_STATUS } from "../status";
+import { formatPuzzleDate } from "../puzzle";
 
 type GameProps = {
   initialColor: Color;
@@ -17,18 +16,9 @@ type GameProps = {
   date: Date | null;
   onNewGame: () => void;
   onDaily: () => void;
-  config: GameConfig;
 };
 
-export default function Game({
-  initialColor,
-  targetColor,
-  date,
-  onNewGame,
-  onDaily,
-  config,
-}: GameProps) {
-  const { board, offsetMultiplier } = config;
+export default function Game({ initialColor, targetColor, date, onNewGame, onDaily }: GameProps) {
   const [moves, setMoves] = useState<Color[]>([]);
 
   const currentColor = moves.at(-1) ?? initialColor;
@@ -49,11 +39,11 @@ export default function Game({
   }
 
   return (
-    <>
+    <div className="@container flex w-full max-w-md flex-col gap-4">
       <h1 className="text-center text-xl font-bold">
         {date === null ? "Free play" : `Daily puzzle · ${formatPuzzleDate(date)}`}
       </h1>
-      <GameBoard layout={board} from={initialColor} to={targetColor} status={status}>
+      <GameBoard from={initialColor} to={targetColor} status={status}>
         {Array.from({ length: MAX_MOVES }, (_, idx) => (
           <Tile key={idx} color={moves[idx] ?? null} />
         ))}
@@ -70,12 +60,7 @@ export default function Game({
         onNewGame={onNewGame}
         onDaily={onDaily}
       />
-      <ControlPad
-        color={currentColor}
-        step={offsetMultiplier}
-        isOver={isOver}
-        onMove={handleMove}
-      />
-    </>
+      <ControlPad color={currentColor} isOver={isOver} onMove={handleMove} />
+    </div>
   );
 }

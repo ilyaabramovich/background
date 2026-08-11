@@ -1,19 +1,17 @@
 import { useEffect, useRef } from "react";
 import { contrastingColor, formatColor, mixColors } from "../color";
 import type { Color } from "../color";
-import type { BoardLayout } from "../config";
 import type { GameStatus } from "../status";
 import Tile from "./Tile";
 
 type GameBoardProps = {
-  layout: BoardLayout;
   from: Color;
   to: Color;
   status: GameStatus | null;
   children: React.ReactNode;
 };
 
-export default function GameBoard({ layout, from, to, status, children }: GameBoardProps) {
+export default function GameBoard({ from, to, status, children }: GameBoardProps) {
   const resultRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -23,15 +21,8 @@ export default function GameBoard({ layout, from, to, status, children }: GameBo
   }, [status]);
 
   return (
-    <div className="min-h-0 @container-size">
-      <div
-        className="relative grid grid-cols-[repeat(var(--board-columns),1fr)] grid-rows-[repeat(var(--board-rows),1fr)] mx-auto aspect-(--board-aspect) w-[min(100%,calc(100cqh*var(--board-aspect)))]"
-        style={{
-          "--board-columns": layout.columns,
-          "--board-rows": layout.rows,
-          "--board-aspect": `${layout.columns}/${layout.rows}`,
-        }}
-      >
+    <div className="@container-size flex min-h-32 flex-1 items-center justify-center">
+      <div className="relative grid aspect-square w-[min(100%,100cqh)] grid-cols-3 grid-rows-3">
         <Tile color={from} />
         {children}
         <Tile color={to} />

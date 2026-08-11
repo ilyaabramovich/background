@@ -75,8 +75,6 @@ test("the visible move counter stays out of the accessibility tree", async ({ pa
 test("the board reports its colors and remaining moves to a screen reader", async ({ page }) => {
   const live = announcer(page);
 
-  // Found by test id, so that being a live region is something this spec states rather than
-  // something it assumed by looking the element up under that name.
   await expect(live).toHaveAttribute("aria-live", "polite");
   await expect(live).toHaveText(/Current color red \d+, green \d+, blue \d+\./);
   await expect(live).toHaveText(new RegExp(`${MAX_MOVES} moves left\\.$`));

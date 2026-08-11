@@ -1,8 +1,7 @@
 #!/bin/sh
 set -e
 
-# One list, shared with the Test workflow, so the two cannot drift apart.
-echo "🔍 Running checks..."
+echo "Running checks..."
 npm run check
 
-echo "✅ All checks passed!"
+echo "All checks passed!"
