@@ -37,7 +37,7 @@ export default function GameActions({
         {moveCount}/{MAX_MOVES}
       </span>
       <div className="flex gap-2">
-        {date === null && <ActionButton onClick={onDaily}>Daily</ActionButton>}
+        <ActionButton disabled={date !== null} onClick={onDaily}>Daily</ActionButton>
         <ActionButton aria-label="New game" onClick={onNewGame}>
           New
         </ActionButton>
