@@ -10,10 +10,25 @@ export const CHANNELS = [
 
 export const MAX_CHANNEL = 0xff;
 
-const CONTRAST_PIVOT = Math.sqrt(1.05 * 0.05) - 0.05;
+const CONTRAST_PIVOT = 0.17912878474779204; // Math.sqrt(1.05 * 0.05) - 0.05;
+const SHIFTS = [16, 8, 0] as const satisfies readonly number[];
+const LINEAR_CHANNEL = new Float32Array(MAX_CHANNEL + 1);
+
+for (let i = 0; i <= MAX_CHANNEL; i++) {
+  const channel = i / MAX_CHANNEL;
+  LINEAR_CHANNEL[i] = channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+}
+
+const HEX = Array.from({ length: MAX_CHANNEL + 1 }, (_, value) =>
+  value.toString(16).padStart(2, "0"),
+);
+
+function channelAt(colorInt: Color, channel: Channel) {
+  return (colorInt >> SHIFTS[channel]) & MAX_CHANNEL;
+}
 
 function clampChannel(value: number) {
-  return Math.min(Math.max(value, 0), MAX_CHANNEL);
+  return value < 0 ? 0 : value > 255 ? 255 : value;
 }
 
 export function packColor([r, g, b]: number[]): Color {
@@ -21,30 +36,32 @@ export function packColor([r, g, b]: number[]): Color {
 }
 
 export function offsetColor(colorInt: Color, offsets: number[]): Color {
-  return packColor(colorToIntArray(colorInt).map((value, i) => clampChannel(value + offsets[i])));
+  let offset = colorInt;
+
+  for (const { channel } of CHANNELS) {
+    offset = offsetChannel(offset, channel, offsets[channel]);
+  }
+
+  return offset;
 }
 
 export function offsetChannel(colorInt: Color, channelIndex: Channel, amount: number): Color {
-  const channels = colorToIntArray(colorInt);
-  channels[channelIndex] = clampChannel(channels[channelIndex] + amount);
+  const shift = SHIFTS[channelIndex];
+  const value = clampChannel(((colorInt >> shift) & MAX_CHANNEL) + amount);
 
-  return packColor(channels);
+  return (colorInt & ~(MAX_CHANNEL << shift)) | (value << shift);
 }
 
 export function mixColors(colorInt: Color, otherColorInt: Color): Color {
-  const other = colorToIntArray(otherColorInt);
-
-  return packColor(colorToIntArray(colorInt).map((value, i) => Math.round((value + other[i]) / 2)));
+  return (colorInt | otherColorInt) - (((colorInt ^ otherColorInt) & 0xfefefe) >> 1);
 }
 
 function relativeLuminance(colorInt: Color) {
-  const [r, g, b] = colorToIntArray(colorInt).map((value) => {
-    const channel = value / MAX_CHANNEL;
-
-    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-  });
-
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (
+    0.2126 * LINEAR_CHANNEL[channelAt(colorInt, 0)] +
+    0.7152 * LINEAR_CHANNEL[channelAt(colorInt, 1)] +
+    0.0722 * LINEAR_CHANNEL[channelAt(colorInt, 2)]
+  );
 }
 
 export function contrastingColor(colorInt: Color): Color {
@@ -52,19 +69,13 @@ export function contrastingColor(colorInt: Color): Color {
 }
 
 export function formatColor(colorInt: Color): string {
-  return `#${colorInt.toString(16).padStart(6, "0")}`;
+  return `#${HEX[channelAt(colorInt, 0)]}${HEX[channelAt(colorInt, 1)]}${HEX[channelAt(colorInt, 2)]}`;
 }
 
 export function describeColor(colorInt: Color): string {
-  const channels = colorToIntArray(colorInt);
-
-  return CHANNELS.map(({ channel, name }) => `${name} ${channels[channel]}`).join(", ");
+  return CHANNELS.map(({ channel, name }) => `${name} ${channelAt(colorInt, channel)}`).join(", ");
 }
 
 export function colorToIntArray(colorInt: Color): [number, number, number] {
-  return [
-    (colorInt >> 16) & 0xff, // Red
-    (colorInt >> 8) & 0xff, // Green
-    colorInt & 0xff, // Blue
-  ];
+  return [channelAt(colorInt, 0), channelAt(colorInt, 1), channelAt(colorInt, 2)];
 }

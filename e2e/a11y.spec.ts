@@ -64,7 +64,7 @@ test("every control names the channel it moves", async ({ page }) => {
     await expect(button(page, `Decrease ${name}`)).toBeVisible();
   }
 
-  await expect(page.getByRole("button")).toHaveCount(9);
+  await expect(page.getByRole("button")).toHaveCount(10);
 });
 
 test("the visible move counter stays out of the accessibility tree", async ({ page }) => {

@@ -68,7 +68,7 @@ test("new game leaves the daily, and daily brings the same board back", async ({
   const dailyColors = await readColors(page);
 
   expect(daily).toMatch(/^Daily puzzle · /);
-  await expect(button(page, "Daily")).toBeHidden();
+  await expect(button(page, "Daily")).toBeDisabled();
 
   await button(page, "New game").click();
   await expect(heading(page)).toHaveText("Free play");
