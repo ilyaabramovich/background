@@ -23,17 +23,17 @@ export default function Puzzle({ initialColor, targetColor }: PuzzleProps) {
   const hasWon = isOver && currentColor.equals(targetColor);
   const status = isOver ? (hasWon ? GAME_STATUS.won : GAME_STATUS.lost) : null;
 
-  function handleMove(nextColor: Color) {
+  const handleMove = (nextColor: Color) => {
     setMoves((moves) => (moves.length >= MAX_MOVES ? moves : [...moves, nextColor]));
-  }
+  };
 
-  function goBack() {
+  const handleUndo = () => {
     setMoves((moves) => moves.slice(0, -1));
-  }
+  };
 
-  function restartGame() {
+  const handleRestart = () => {
     setMoves([]);
-  }
+  };
 
   return (
     <div className="@container flex w-full max-w-md flex-col gap-4">
@@ -46,7 +46,7 @@ export default function Puzzle({ initialColor, targetColor }: PuzzleProps) {
         {`Current color ${currentColor.describe()}. Target color ${targetColor.describe()}. ${MAX_MOVES - moves.length} moves left.`}
       </p>
       {import.meta.env.DEV && <DebugOverlay colors={[currentColor, targetColor]} />}
-      <GameActions moveCount={moves.length} onGoBack={goBack} onRestart={restartGame} />
+      <GameActions moveCount={moves.length} onUndo={handleUndo} onRestart={handleRestart} />
       <ControlPad color={currentColor} isOver={isOver} onMove={handleMove} />
     </div>
   );
