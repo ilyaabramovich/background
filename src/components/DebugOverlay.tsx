@@ -3,7 +3,7 @@ import type { Color } from "../color";
 export default function DebugOverlay({ colors }: { colors: Color[] }) {
   return (
     <div
-      className="pointer-events-none flex flex-col gap-2 text-xs"
+      className="pointer-events-none flex flex-col gap-4 text-xs"
       style={{
         position: "fixed",
         bottom: "1rem",

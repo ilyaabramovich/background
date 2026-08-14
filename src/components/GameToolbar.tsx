@@ -1,16 +1,16 @@
 import { MAX_MOVES } from "../config";
 import ActionButton from "./ActionButton";
 
-type GameActionsProps = {
+type GameToolbarProps = {
   moveCount: number;
   onUndo: () => void;
   onRestart: () => void;
 };
 
-export default function GameActions({ moveCount, onUndo, onRestart }: GameActionsProps) {
+export default function GameToolbar({ moveCount, onUndo, onRestart }: GameToolbarProps) {
   return (
-    <div className="flex items-center justify-between gap-2">
-      <div className="flex gap-2">
+    <div className="flex items-center justify-between">
+      <div className="flex gap-4">
         <ActionButton onClick={onUndo} disabled={moveCount === 0}>
           Undo
         </ActionButton>
@@ -21,7 +21,7 @@ export default function GameActions({ moveCount, onUndo, onRestart }: GameAction
       <span
         aria-hidden="true"
         data-testid="move-counter"
-        className="text-sm font-semibold whitespace-nowrap"
+        className="font-semibold whitespace-nowrap"
       >
         Moves: {moveCount}/{MAX_MOVES}
       </span>

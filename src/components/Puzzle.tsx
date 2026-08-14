@@ -6,8 +6,8 @@ import { MAX_MOVES } from "../config";
 import { GAME_STATUS } from "../game";
 import ControlPad from "./ControlPad";
 import DebugOverlay from "./DebugOverlay";
-import GameActions from "./GameActions";
 import GameBoard from "./GameBoard";
+import GameToolbar from "./GameToolbar";
 import Tile from "./Tile";
 
 type PuzzleProps = {
@@ -46,7 +46,7 @@ export default function Puzzle({ initialColor, targetColor }: PuzzleProps) {
         {`Current color ${currentColor.describe()}. Target color ${targetColor.describe()}. ${MAX_MOVES - moves.length} moves left.`}
       </p>
       {import.meta.env.DEV && <DebugOverlay colors={[currentColor, targetColor]} />}
-      <GameActions moveCount={moves.length} onUndo={handleUndo} onRestart={handleRestart} />
+      <GameToolbar moveCount={moves.length} onUndo={handleUndo} onRestart={handleRestart} />
       <ControlPad color={currentColor} isOver={isOver} onMove={handleMove} />
     </div>
   );

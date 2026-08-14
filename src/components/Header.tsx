@@ -9,9 +9,9 @@ type HeaderProps = {
 
 export default function Header({ gameMode, onModeChange }: HeaderProps) {
   return (
-    <header className="flex w-full items-center justify-between gap-2">
+    <header className="flex w-full items-center justify-between gap-4">
       <h1 className="text-xl font-bold">{gameMode === "daily" ? "Daily puzzle" : "Free play"}</h1>
-      <div className="flex gap-2">
+      <div className="flex gap-4">
         <ActionButton disabled={gameMode === "daily"} onClick={() => onModeChange("daily")}>
           Daily
         </ActionButton>
