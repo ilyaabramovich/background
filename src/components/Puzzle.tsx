@@ -1,29 +1,26 @@
 import { useState } from "react";
+
+import type { Color } from "../color";
+
+import { MAX_MOVES } from "../config";
+import { GAME_STATUS } from "../game";
 import ControlPad from "./ControlPad";
 import DebugOverlay from "./DebugOverlay";
-import Tile from "./Tile";
-import GameBoard from "./GameBoard";
 import GameActions from "./GameActions";
-import { describeColor } from "../color";
-import type { Color } from "../color";
-import { MAX_MOVES } from "../config";
-import { GAME_STATUS } from "../status";
-import { formatPuzzleDate } from "../puzzle";
+import GameBoard from "./GameBoard";
+import Tile from "./Tile";
 
-type GameProps = {
+type PuzzleProps = {
   initialColor: Color;
   targetColor: Color;
-  date: Date | null;
-  onNewGame: () => void;
-  onDaily: () => void;
 };
 
-export default function Game({ initialColor, targetColor, date, onNewGame, onDaily }: GameProps) {
+export default function Puzzle({ initialColor, targetColor }: PuzzleProps) {
   const [moves, setMoves] = useState<Color[]>([]);
 
   const currentColor = moves.at(-1) ?? initialColor;
   const isOver = moves.length >= MAX_MOVES;
-  const hasWon = isOver && currentColor === targetColor;
+  const hasWon = isOver && currentColor.equals(targetColor);
   const status = isOver ? (hasWon ? GAME_STATUS.won : GAME_STATUS.lost) : null;
 
   function handleMove(nextColor: Color) {
@@ -40,26 +37,16 @@ export default function Game({ initialColor, targetColor, date, onNewGame, onDai
 
   return (
     <div className="@container flex w-full max-w-md flex-col gap-4">
-      <h1 className="text-center text-xl font-bold">
-        {date === null ? "Free play" : `Daily puzzle · ${formatPuzzleDate(date)}`}
-      </h1>
       <GameBoard from={initialColor} to={targetColor} status={status}>
         {Array.from({ length: MAX_MOVES }, (_, idx) => (
           <Tile key={idx} color={moves[idx] ?? null} />
         ))}
       </GameBoard>
       <p className="sr-only" aria-live="polite" data-testid="announcer">
-        {`Current color ${describeColor(currentColor)}. Target color ${describeColor(targetColor)}. ${MAX_MOVES - moves.length} moves left.`}
+        {`Current color ${currentColor.describe()}. Target color ${targetColor.describe()}. ${MAX_MOVES - moves.length} moves left.`}
       </p>
       {import.meta.env.DEV && <DebugOverlay colors={[currentColor, targetColor]} />}
-      <GameActions
-        moveCount={moves.length}
-        date={date}
-        onGoBack={goBack}
-        onRestart={restartGame}
-        onNewGame={onNewGame}
-        onDaily={onDaily}
-      />
+      <GameActions moveCount={moves.length} onGoBack={goBack} onRestart={restartGame} />
       <ControlPad color={currentColor} isOver={isOver} onMove={handleMove} />
     </div>
   );

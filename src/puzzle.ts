@@ -1,23 +1,10 @@
-import { MAX_MOVES, STEP } from "./config";
-import { createRandomInt } from "./random";
-import type { RandomInt } from "./random";
-import { MAX_CHANNEL, colorToIntArray, offsetColor } from "./color";
 import type { Color } from "./color";
+import type { RandomInt } from "./random";
 
-type Puzzle = {
-  initialColor: Color;
-  targetColor: Color;
-};
+import { MAX_CHANNEL } from "./color";
+import { defaultRandomInt } from "./random";
 
-const MAX_RGB_COLORS = 16777216;
-const DATE_LABEL = new Map<string | undefined, Intl.DateTimeFormat>();
 const MS_PER_DAY = 86400000;
-
-const defaultRandomInt: RandomInt = (max) => Math.floor(Math.random() * (max + 1));
-
-export function randomColor(randomInt: RandomInt = defaultRandomInt): Color {
-  return randomInt(MAX_RGB_COLORS - 1);
-}
 
 function pickDirection(value: number, distance: number, randomInt: RandomInt) {
   const canIncrease = value + distance <= MAX_CHANNEL;
@@ -65,7 +52,7 @@ export function generateOffsets(
   const p2 = randomInt(moveCount);
 
   const [min, max] = [p1, p2].sort((a, b) => a - b);
-  const channels = colorToIntArray(initialColor);
+  const channels = initialColor.channels();
   const magnitudes = fitToHeadroom([min, max - min, moveCount - max], channels, step);
 
   return magnitudes.map((magnitude, index) => {
@@ -75,28 +62,6 @@ export function generateOffsets(
   });
 }
 
-export function createPuzzle(seed?: number): Puzzle {
-  const randomInt = createRandomInt(seed);
-  const initialColor = randomColor(randomInt);
-  const offsets = generateOffsets(MAX_MOVES, initialColor, STEP, randomInt);
-
-  return {
-    initialColor,
-    targetColor: offsetColor(initialColor, offsets),
-  };
-}
-
 export function dailySeed(date = new Date()): number {
   return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY;
-}
-
-export function formatPuzzleDate(date: Date, locale?: string): string {
-  let formatter = DATE_LABEL.get(locale);
-
-  if (formatter === undefined) {
-    formatter = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" });
-    DATE_LABEL.set(locale, formatter);
-  }
-
-  return formatter.format(date);
 }

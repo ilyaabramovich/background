@@ -1,23 +1,13 @@
-import ActionButton from "./ActionButton";
 import { MAX_MOVES } from "../config";
+import ActionButton from "./ActionButton";
 
 type GameActionsProps = {
   moveCount: number;
-  date: Date | null;
   onGoBack: () => void;
   onRestart: () => void;
-  onNewGame: () => void;
-  onDaily: () => void;
 };
 
-export default function GameActions({
-  moveCount,
-  date,
-  onGoBack,
-  onRestart,
-  onNewGame,
-  onDaily,
-}: GameActionsProps) {
+export default function GameActions({ moveCount, onGoBack, onRestart }: GameActionsProps) {
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex gap-2">
@@ -33,17 +23,8 @@ export default function GameActions({
         data-testid="move-counter"
         className="text-sm font-semibold whitespace-nowrap"
       >
-        <span className="hidden @[20rem]:inline">Moves: </span>
-        {moveCount}/{MAX_MOVES}
+        Moves: {moveCount}/{MAX_MOVES}
       </span>
-      <div className="flex gap-2">
-        <ActionButton disabled={date !== null} onClick={onDaily}>
-          Daily
-        </ActionButton>
-        <ActionButton aria-label="New game" onClick={onNewGame}>
-          New
-        </ActionButton>
-      </div>
     </div>
   );
 }

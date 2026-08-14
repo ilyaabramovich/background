@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
+
 import { MAX_MOVES } from "../src/config.js";
-import { GAME_STATUS } from "../src/status.js";
+import { GAME_STATUS } from "../src/game.js";
 import {
   button,
   controlPad,
@@ -23,7 +24,7 @@ test("wins the board when every move closes the gap to the target", async ({ pag
   await expect(status(page)).toHaveText(GAME_STATUS.won);
   await expect(moveCounter(page)).toHaveText(`Moves: ${MAX_MOVES}/${MAX_MOVES}`);
   const finished = await readColors(page);
-  expect(finished.current).toBe(finished.target);
+  expect(finished.current.equals(finished.target)).toBe(true);
 });
 
 test("loses the board when the last move is spent elsewhere", async ({ page }) => {
@@ -31,7 +32,7 @@ test("loses the board when the last move is spent elsewhere", async ({ page }) =
 
   await expect(status(page)).toHaveText(GAME_STATUS.lost);
   const finished = await readColors(page);
-  expect(finished.current).not.toBe(finished.target);
+  expect(finished.current.equals(finished.target)).toBe(false);
 });
 
 test("the controls stop taking moves once the game is over", async ({ page }) => {
@@ -67,10 +68,10 @@ test("new game leaves the daily, and daily brings the same board back", async ({
   const daily = await heading(page).textContent();
   const dailyColors = await readColors(page);
 
-  expect(daily).toMatch(/^Daily puzzle · /);
+  expect(daily).toBe("Daily puzzle");
   await expect(button(page, "Daily")).toBeDisabled();
 
-  await button(page, "New game").click();
+  await button(page, "Free play").click();
   await expect(heading(page)).toHaveText("Free play");
 
   await button(page, "Daily").click();

@@ -1,7 +1,9 @@
-import { xoroshiro128plus } from "pure-rand/generator/xoroshiro128plus";
 import { uniformInt } from "pure-rand/distribution/uniformInt";
+import { xoroshiro128plus } from "pure-rand/generator/xoroshiro128plus";
 
 export type RandomInt = (max: number) => number;
+
+export const defaultRandomInt: RandomInt = (max) => Math.floor(Math.random() * (max + 1));
 
 function scramble(value: number) {
   let hash = value | 0;

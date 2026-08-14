@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef } from "react";
-import { contrastingColor, formatColor, mixColors } from "../color";
+
 import type { Color } from "../color";
-import type { GameStatus } from "../status";
+import type { GameStatus } from "../game";
 
 type GameStatusOverlayProps = {
   from: Color;
@@ -20,12 +20,12 @@ function GameStatusOverlay({ from, to, status }: GameStatusOverlayProps) {
 
   return (
     <div
-      className={`pointer-events-none absolute inset-0 grid place-content-center transition-opacity duration-700 motion-reduce:transition-none ${
+      className={`pointer-events-none absolute grid aspect-square w-[min(100%,100cqh)] place-content-center transition-opacity duration-700 motion-reduce:transition-none ${
         status ? "opacity-100" : "opacity-0"
       }`}
       style={{
-        backgroundImage: `linear-gradient(to bottom right, ${formatColor(from)}, ${formatColor(to)})`,
-        color: formatColor(contrastingColor(mixColors(from, to))),
+        backgroundImage: `linear-gradient(to bottom right, ${from}, ${to})`,
+        color: from.mix(to).contrasting().toString(),
       }}
     >
       <p

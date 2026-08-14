@@ -1,8 +1,10 @@
+import type { Page } from "@playwright/test";
+
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
+
 import { MAX_MOVES } from "../src/config.js";
-import { GAME_STATUS } from "../src/status.js";
+import { GAME_STATUS } from "../src/game.js";
 import {
   announcer,
   button,
@@ -47,7 +49,7 @@ test("a finished board has no accessibility violations", async ({ page }) => {
 });
 
 test("free play has no accessibility violations", async ({ page }) => {
-  await button(page, "New game").click();
+  await button(page, "Free play").click();
   await expect(heading(page)).toHaveText("Free play");
 
   await expectNoViolations(page);
@@ -55,7 +57,7 @@ test("free play has no accessibility violations", async ({ page }) => {
 
 test("the page names itself once, at the top", async ({ page }) => {
   await expect(heading(page)).toHaveCount(1);
-  await expect(heading(page)).toHaveText(/^Daily puzzle · /);
+  await expect(heading(page)).toHaveText("Daily puzzle");
 });
 
 test("every control names the channel it moves", async ({ page }) => {
@@ -99,7 +101,7 @@ test("the controls are reached and fired from the keyboard", async ({ page }) =>
     );
   }
 
-  expect(focused).toEqual(["New game", "Increase red", "Increase green", "Increase blue"]);
+  expect(focused).toEqual(["Free play", "Increase red", "Increase green", "Increase blue"]);
 
   await page.keyboard.press("Enter");
   await expect(moveCounter(page)).toHaveText(`Moves: 1/${MAX_MOVES}`);

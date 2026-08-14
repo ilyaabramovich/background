@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createRandomInt } from "./random";
+
 import type { RandomInt } from "./random";
+
+import { createRandomInt } from "./random";
 
 const draw = (randomInt: RandomInt, count: number, max: number) =>
   Array.from({ length: count }, () => randomInt(max));

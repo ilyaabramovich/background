@@ -1,7 +1,9 @@
 import type { Page } from "@playwright/test";
+
+import type { Channel } from "../src/color.js";
+
+import { CHANNELS, Color } from "../src/color.js";
 import { STEP, MAX_MOVES } from "../src/config.js";
-import { CHANNELS, colorToIntArray, offsetChannel, packColor } from "../src/color.js";
-import type { Channel, Color } from "../src/color.js";
 
 export type Move = {
   channel: Channel;
@@ -44,19 +46,19 @@ export async function readColors(page: Page) {
   }
 
   const [current, target] = [match.slice(1, 4), match.slice(4, 7)].map((channels) =>
-    packColor(channels.map(Number)),
+    Color.pack(channels.map(Number)),
   );
 
   return { current, target };
 }
 
 function applyMoves(color: Color, moves: Move[]): Color {
-  return moves.reduce((next, move) => offsetChannel(next, move.channel, move.delta * STEP), color);
+  return moves.reduce((next, move) => next.offsetChannel(move.channel, move.delta * STEP), color);
 }
 
 export function solution(current: Color, target: Color): Move[] {
-  const distances = colorToIntArray(target).map(
-    (value, channel) => (value - colorToIntArray(current)[channel]) / STEP,
+  const distances = CHANNELS.map(
+    ({ channel }) => (target.channelAt(channel) - current.channelAt(channel)) / STEP,
   );
 
   if (!distances.every(Number.isInteger)) {
@@ -83,7 +85,7 @@ export function misplay(current: Color, target: Color): Move[] {
     for (const delta of [1, -1]) {
       const candidate = [...moves.slice(0, -1), { channel, delta }];
 
-      if (applyMoves(current, candidate) !== target) {
+      if (!applyMoves(current, candidate).equals(target)) {
         return candidate;
       }
     }

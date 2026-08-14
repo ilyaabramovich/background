@@ -1,7 +1,8 @@
-import ControlTile from "./ControlTile";
-import { CHANNELS, offsetChannel } from "../color";
 import type { Color } from "../color";
+
+import { CHANNELS } from "../color";
 import { STEP } from "../config";
+import ControlTile from "./ControlTile";
 
 type ControlPadProps = {
   color: Color;
@@ -12,7 +13,7 @@ type ControlPadProps = {
 export default function ControlPad({ color, isOver, onMove }: ControlPadProps) {
   return (
     <div
-      className="mx-auto grid w-full max-w-60 gap-4 grid-cols-3 [[inert]]:opacity-40"
+      className="mx-auto grid w-full max-w-60 grid-cols-3 gap-4 [[inert]]:opacity-40"
       inert={isOver}
       data-testid="control-pad"
     >
@@ -27,7 +28,7 @@ export default function ControlPad({ color, isOver, onMove }: ControlPadProps) {
       {[1, -1].flatMap((delta) =>
         CHANNELS.map(({ channel, name }) => {
           const amount = delta * STEP;
-          const nextColor = offsetChannel(color, channel, amount);
+          const nextColor = color.offsetChannel(channel, amount);
 
           return (
             <ControlTile

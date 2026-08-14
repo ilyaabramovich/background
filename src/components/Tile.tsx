@@ -1,13 +1,21 @@
-import { formatColor } from "../color";
+import { memo } from "react";
+
 import type { Color } from "../color";
 
-export default function Tile({ color }: { color: Color | null }) {
+import EmptyTile from "./EmptyTile";
+
+export default memo(function Tile({ color }: { color: Color | null }) {
+  if (color === null) {
+    return <EmptyTile />;
+  }
+
+  const formattedColor = color.toString();
+
   return (
-    <div
-      role="img"
-      aria-label={color == null ? "Empty tile" : formatColor(color)}
+    <li
+      aria-label={formattedColor}
       aria-roledescription="tile"
-      style={{ backgroundColor: color == null ? undefined : formatColor(color) }}
+      style={{ backgroundColor: formattedColor }}
     />
   );
-}
+});

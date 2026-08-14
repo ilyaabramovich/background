@@ -1,4 +1,3 @@
-import { colorToIntArray } from "../color";
 import type { Color } from "../color";
 
 export default function DebugOverlay({ colors }: { colors: Color[] }) {
@@ -7,7 +6,7 @@ export default function DebugOverlay({ colors }: { colors: Color[] }) {
       className="pointer-events-none flex flex-col gap-2 text-xs"
       style={{
         position: "fixed",
-        top: "1rem",
+        bottom: "1rem",
         right: "1rem",
         zIndex: 10,
         fontFamily: "ui-monospace, monospace",
@@ -16,7 +15,8 @@ export default function DebugOverlay({ colors }: { colors: Color[] }) {
     >
       {colors.map((color, idx) => (
         <span key={idx}>
-          {colorToIntArray(color)
+          {color
+            .channels()
             .map((v) => String(v).padStart(3))
             .join(" ")}
         </span>

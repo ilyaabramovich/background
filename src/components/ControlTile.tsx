@@ -1,4 +1,3 @@
-import { contrastingColor, formatColor } from "../color";
 import type { Color } from "../color";
 
 type ControlTileProps = {
@@ -17,7 +16,7 @@ export default function ControlTile({ color, label, onClick, children }: Control
         onClick(color);
       }}
       className="grid aspect-square cursor-pointer place-items-center text-2xl leading-none font-bold focus-visible:outline-2 focus-visible:outline-offset-2"
-      style={{ backgroundColor: formatColor(color), color: formatColor(contrastingColor(color)) }}
+      style={{ backgroundColor: color.toString(), color: color.contrasting().toString() }}
     >
       {children}
     </button>
