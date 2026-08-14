@@ -44,23 +44,23 @@ test("the controls stop taking moves once the game is over", async ({ page }) =>
   await expect(moveCounter(page)).toHaveText(`Moves: ${MAX_MOVES}/${MAX_MOVES}`);
 });
 
-test("go back takes one move off and reset takes them all", async ({ page }) => {
+test("undo takes one move off and reset takes them all", async ({ page }) => {
   const start = await readColors(page);
-  const goBack = button(page, "Go back");
+  const undo = button(page, "Undo");
   const reset = button(page, "Reset");
 
-  await expect(goBack).toBeDisabled();
+  await expect(undo).toBeDisabled();
   await expect(reset).toBeDisabled();
 
   await playSomeMoves(page, 3);
   await expect(moveCounter(page)).toHaveText(`Moves: 3/${MAX_MOVES}`);
 
-  await goBack.click();
+  await undo.click();
   await expect(moveCounter(page)).toHaveText(`Moves: 2/${MAX_MOVES}`);
 
   await reset.click();
   await expect(moveCounter(page)).toHaveText(`Moves: 0/${MAX_MOVES}`);
-  await expect(goBack).toBeDisabled();
+  await expect(undo).toBeDisabled();
   expect(await readColors(page)).toEqual(start);
 });
 
